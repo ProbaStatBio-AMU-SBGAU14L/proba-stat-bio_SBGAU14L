@@ -9,10 +9,17 @@ Supports du cours "Probabilités et statistiques pour la biologie" (SBGAU14L) en
 
 ## Enseignants 2026
 
+
+### CM et TP
+
 - Andreas Zanzoni ([0000-0002-4818-6161](https://orcid.org/0000-0002-4818-6161))
 - Jacques van Helden ([0000-0002-8799-8584](https://orcid.org/0000-0002-8799-8584))
+
+### TP
+
 - Lou Bergogne ([0009-0004-9409-0154](https://orcid.org/0009-0004-9409-0154)]
 - Juliette Patricio
+- Lola Saboret
 
 ## Contenus
 
