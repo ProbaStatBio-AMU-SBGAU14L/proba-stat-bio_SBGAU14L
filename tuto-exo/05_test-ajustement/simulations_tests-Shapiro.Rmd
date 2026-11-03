@@ -3,6 +3,11 @@ title: "Simulations empiriques : puissance du test de Shapiro"
 author: "Jacques van Helden (ORCID [0000-0002-8799-8584](https://orcid.org/0000-0002-8799-8584))"
 date: "`r Sys.Date()`"
 output:
+  pdf_document:
+    fig_caption: true
+    highlight: zenburn
+    toc: true
+    toc_depth: 3
   html_document:
     self_contained: no
     code_folding: hide
@@ -13,11 +18,6 @@ output:
     toc: true
     toc_depth: 3
     toc_float: true
-  pdf_document:
-    fig_caption: true
-    highlight: zenburn
-    toc: true
-    toc_depth: 3
   html_notebook:
     self_contained: yes
     code_folding: show
