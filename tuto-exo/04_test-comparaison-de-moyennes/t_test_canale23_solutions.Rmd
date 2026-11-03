@@ -219,6 +219,7 @@ Nous allons maintenant calculer les mêmes statistiques en séparant les échant
 Pour cela nous allons utiliser la table de métadonnées `sample_groups`.
 
 **Exercice : ** 
+
 - Utilisez pour cela la fonction `subset()` pour sélectionner les noms d'échantillons correspondant aux deux types cellulaires. 
 - A partir de la data.frame `log2_LFQ` qui contient les données protéomiques de tous les échantillons, créez deux data.frames nommées respectivement `log2_LFQ_liver` et  `logLFQHCC` avec le sous-ensemble de colonnes des tissus correspondants. 
 - Calculez les moyennes marginales respectives des échantillons de foie et de cellules hépatocarcinome cellulaire, et stockez-les dans des vecteurs nommés respectivement `mean_per_protein_liver` et  `mean_per_protein_HCC`. 
