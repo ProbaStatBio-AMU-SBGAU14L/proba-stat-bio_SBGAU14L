@@ -3,6 +3,11 @@ title: 'Tuto et TP: tests de comparaison de moyenne'
 author: "Jacques van Helden (ORCID [0000-0002-8799-8584](https://orcid.org/0000-0002-8799-8584))"
 date: '`r Sys.Date()`'
 output:
+  pdf_document:
+    fig_caption: yes
+    highlight: zenburn
+    toc: yes
+    toc_depth: 3
   html_document:
     code_folding: hide
     fig_caption: yes
@@ -11,16 +16,10 @@ output:
     toc: yes
     toc_depth: 3
     toc_float: yes
-  pdf_document:
-    fig_caption: yes
-    highlight: zenburn
-    toc: yes
-    toc_depth: 3
   ioslides_presentation:
     colortheme: dolphin
     fig_caption: yes
     fig_height: 6
-    fig_width: 7
     fonttheme: structurebold
     highlight: tango
     incremental: no
@@ -825,8 +824,7 @@ d. Interprétez le résultat.
 | | |
 | $\delta ~=~ \mu_{2} ~-~ \mu_{1}$ | Différence entre les moyennes des populations. |
 | | |
-| $d ~=~ \hat{\delta} ~=~ \hat{\mu}_2 ~-~ \hat{\mu}_1  ~=~ \bar{x}_2 ~-~ \bar{x}_1$ | $d$ ~=~ **Taille d'effet**: dans un test de comparaison de moyennes, il s'agit de la différence | | |
-entre les moyennes d'échantillons, utilisée comme estimateur de $\delta$. |
+| $d ~=~ \hat{\delta} ~=~ \hat{\mu}_2 ~-~ \hat{\mu}_1  ~=~ \bar{x}_2 ~-~ \bar{x}_1$ | $d$ ~=~ **Taille d'effet**: dans un test de comparaison de moyennes, il s'agit de la différence entre les moyennes d'échantillons, utilisée comme estimateur de $\delta$. |
 | | |
 | $s^2_{1}, s^2_{2}$ | Variances mesurées sur les échantillons. |
 | | |
