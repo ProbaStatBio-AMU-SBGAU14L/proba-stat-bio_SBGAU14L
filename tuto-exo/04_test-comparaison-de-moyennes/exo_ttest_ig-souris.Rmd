@@ -4,9 +4,6 @@ subtitle: "Proba/stat pour la biologie (SBGAU14L)"
 author: "Jacques van Helden (ORCID [0000-0002-8799-8584](https://orcid.org/0000-0002-8799-8584))"
 date: '`r Sys.Date()`'
 output:
-  word_document:
-    toc: yes
-    toc_depth: 3
   html_document:
     code_folding: hide
     fig_caption: yes
@@ -15,6 +12,9 @@ output:
     toc: yes
     toc_depth: 3
     toc_float: yes
+  word_document:
+    toc: yes
+    toc_depth: 3
   ioslides_presentation:
     colortheme: dolphin
     fig_caption: yes
