@@ -233,8 +233,9 @@ text(x = 2.3, y = p_high - 0.065,
 ****************************************************************
 ## Formules mathématiques
 
-- Les symboles grecs ($\mu$, $\sigma$) correspondent aux paramètres de population, les symboles romains ($\bar{x}$, $s$) aux paramètres d'échantillon.
-- L'accent circonflexe sur un symbole grec ($\hat{\mu}, \hat{\sigma}, \hat{\delta}$) indique un estimateur de paramètre de population calculé à partir d'un paramètre d'échantillon. 
+- Les symboles grecs ($\mu$, $\sigma$) correspondent aux paramètres de population, les symboles romains ($\bar{x}$, $s$) aux statistiques d'échantillon.
+
+- L'accent circonflexe sur un symbole grec ($\hat{\mu}, \hat{\sigma}, \hat{\delta}$) indique un estimateur de paramètre de population calculé à partir d'une statistique d'échantillon. 
 
 
 | Symboles et formules       | Description   |
