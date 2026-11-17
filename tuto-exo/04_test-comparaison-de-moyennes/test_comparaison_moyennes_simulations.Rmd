@@ -3,11 +3,6 @@ title: 'Tuto et TP: tests de comparaison de moyenne'
 author: "Jacques van Helden (ORCID [0000-0002-8799-8584](https://orcid.org/0000-0002-8799-8584))"
 date: '`r Sys.Date()`'
 output:
-  pdf_document:
-    fig_caption: yes
-    highlight: zenburn
-    toc: yes
-    toc_depth: 3
   html_document:
     code_folding: hide
     fig_caption: yes
@@ -16,6 +11,11 @@ output:
     toc: yes
     toc_depth: 3
     toc_float: yes
+  pdf_document:
+    fig_caption: yes
+    highlight: zenburn
+    toc: yes
+    toc_depth: 3
   ioslides_presentation:
     colortheme: dolphin
     fig_caption: yes
@@ -750,7 +750,7 @@ abline(h=seq(0, 1, 0.1), col="#DDDDDD")
 #### Compute the sensitivity ####
 alpha_values <- c(0.1, 0.05, 0.01)
 plot(NULL, 
-     main = "Impact of effect size on sensitivity",
+     main = "Impact of the difference on sensitivity",
      xlab = bquote(delta == mu[1] - mu[2]),
      ylab = "Sensitivity",
      xlim=range(delta_values), 
@@ -828,7 +828,7 @@ d. Interprétez le résultat.
 | | |
 | $s^2_{1}, s^2_{2}$ | Variances mesurées sur les échantillons. |
 | | |
-| $\hat{\sigma}^2_1 ~=~ \frac{n_1}{n_1-1} s^2_{1} ~=~ \frac{1}{n_1-1}\displaystyle\sum_{i=1}^{n_1} (x_{1i} ~-~ \bar{x}_2)^2 \quad$ $\hat{\sigma}^2_2 ~=~ \frac{n_2}{n_2-1} s^2_{2} ~=~ \frac{1}{n_2-1}\displaystyle\sum_{i=1}^{n_2} (x_{2i} ~-~ \bar{x}_2)^2$ | Estimateurs corrigés (non biaisés) de la variance des populations respectives |  
+| $\hat{\sigma}^2_1 ~=~ \frac{n_1}{n_1-1} s^2_{1} ~=~ \frac{1}{n_1-1}\displaystyle\sum_{i=1}^{n_1} (x_{1i} ~-~ \bar{x}_1)^2 \quad$ $\hat{\sigma}^2_2 ~=~ \frac{n_2}{n_2-1} s^2_{2} ~=~ \frac{1}{n_2-1}\displaystyle\sum_{i=1}^{n_2} (x_{2i} ~-~ \bar{x}_2)^2$ | Estimateurs corrigés (non biaisés) de la variance des populations respectives |  
 | | |
 | $\hat{\sigma}_1 ~=~ \sqrt{\hat{\sigma}^2_1} \; ; \; \hat{\sigma}_2 ~=~ \sqrt{\hat{\sigma}^2_2}$ | Estimateurs corrigés (non biaisés) de l'écart-type des populations respectives |  
 | | |
@@ -836,7 +836,7 @@ d. Interprétez le résultat.
 | | |
 | $\hat{\sigma}_\delta ~=~ \hat{\sigma}_p \sqrt{\left(\frac{1}{n_1}+ \frac{1}{n_2}\right)}$  | Erreur standard sur la différence entre moyennes, en supposant que les populations ont la même variance (test de Student). |
 | | |
-| $t_{\text{obs}} ~=~ \frac{\hat{\mu}_{1} ~-~ \hat{\mu}_{2}}{\hat{\sigma}_{\mu_1 ~-~ \mu_2}} ~=~ \frac{\hat{\mu}_{1} ~-~ \hat{\mu}_{2}}{\sqrt{\frac {\hat{\sigma}^2_{1}}{n_1} + \frac{\hat{\sigma}^2_{2}}{n_2}}}$ | statistique $t$ observée, formule basée sur les estimateurs |
+| $$t_{\text{obs}} = \frac{\hat{\delta}}{\hat{\sigma}_{\hat{\delta}}} = \frac{\bar{x}_2 - \bar{x}_1}{\hat{\sigma}_{\hat{\delta}}}$$ | statistique $t$ observée, formule basée sur les estimateurs |
 | | |
 | $t_{S} ~=~ \frac{\hat{\delta}}{\hat{\sigma}_\delta} ~=~  \frac{\bar{x}_{1} ~-~ \bar{x}_{2}}{\sqrt{\frac{n_1 s_{1}^2 + n_2 s_{2}^2}{n_1+n_2-2} \left(\frac{1}{n_1}+ \frac{1}{n_2}\right)}}$ | statistique $t$ de Student |
 | | |
