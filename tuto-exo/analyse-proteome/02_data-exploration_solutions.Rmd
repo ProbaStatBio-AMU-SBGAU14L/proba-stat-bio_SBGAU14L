@@ -440,11 +440,57 @@ plot(mean_per_protein, sd_per_protein,
 ```
 
 
-## Statistiques marginales : statistiques par colonne (échantillon)
+### Exercice : tableau des statistiques marginales par protéine
+
+Générez une structure data frame décrivant les statistiques marginales par protéine (ligne du tableau `log2_LFQ`), avec les colonnes suivantes :
+
+- ID de protéine (row.names)
+- nom principal de la protéine
+- nom principal du gène
+- moyenne (marginale, ainsi que pour les statistiques suivantes)
+- variance corrigée
+- écart-type corrigé
+- valeur minimale
+- premier quartile
+- médiane
+- troisième quartile
+- valeur maximale
+- nombre de valeurs manquantes (NA)
+
+
+```{r stat_per_protein}
+## Create a data.frame with one row per protein and one column per marginal statistics ; 
+##    mean
+##    variance (corrected)
+##    standard deviation (corrected)
+##    min
+##    Q1
+##    median
+##    Q2
+##    max
+
+stat_per_protein <- protein_names[, c("Protein.name", "Gene.name")]
+stat_per_protein$mean <- apply(log2_LFQ, 1, mean, na.rm = TRUE)
+stat_per_protein$var <- apply(log2_LFQ, 1, var, na.rm = TRUE)
+stat_per_protein$sd <- apply(log2_LFQ, 1, sd, na.rm = TRUE)
+stat_per_protein$min <- apply(log2_LFQ, 1, min, na.rm = TRUE)
+stat_per_protein$Q1 <- apply(log2_LFQ, 1, quantile, probs=0.25, na.rm = TRUE)
+stat_per_protein$median <- apply(log2_LFQ, 1, median, na.rm = TRUE)
+stat_per_protein$Q3 <- apply(log2_LFQ, 1, quantile, probs=0.75, na.rm = TRUE)
+stat_per_protein$max <- apply(log2_LFQ, 1, max, na.rm = TRUE)
+
+kable(head(stat_per_protein, n = 10), 
+      digits=3, 
+      caption = "Premières lignes du tableau de statistiques marginales par protéine")
+
+```
+
+
+## Statistiques marginales : statistiques par colonne (prélèvement)
 
 ### Exercice : calcul des statistiques par colonne
 
-- utilisez la fonction `apply()` pour calculer la moyenne par colonne (échantillon), et stockez le résultat dans un vecteur nommé `mean_per_sample`
+- utilisez la fonction `apply()` pour calculer la moyenne par prélèvement (colonne  du tableau `log2_LFQ`), et stockez le résultat dans un vecteur nommé `mean_per_sample`
 - utilisez la fonction `barplot()` pour visualiser les moyennes
 
 ```{r barplot_mean_per_sample, fig.height=4, fig.width=12, out.width="100%", fig.cap="Barplot of the mean per sample"}
@@ -458,6 +504,54 @@ barplot(mean_per_sample,
         las = 2)
 
 ```
+
+
+Générez une structure data frame décrivant les statistiques marginales par prélèvement (colonnesdu tableau `log2_LFQ`), avec les colonnes suivantes :
+
+- ID du prélèvement (row.names)
+- groupe (HCC | liver)
+- identifiant du patient
+- moyenne (marginale, ainsi que pour les statistiques suivantes)
+- variance corrigée
+- écart-type corrigé
+- valeur minimale
+- premier quartile
+- médiane
+- troisième quartile
+- valeur maximale
+- nombre de valeurs manquantes (NA)
+
+
+
+
+```{r stat_per_sample}
+## Create a data.frame with one row per sample and one column per marginal statistics ; 
+##    mean
+##    variance (corrected)
+##    standard deviation (corrected)
+##    min
+##    Q1
+##    median
+##    Q2
+##    max
+
+stat_per_sample <- sample_groups[, c("group", "sample")]
+stat_per_sample$mean <- apply(log2_LFQ, 2, mean, na.rm = TRUE)
+stat_per_sample$var <- apply(log2_LFQ, 2, var, na.rm = TRUE)
+stat_per_sample$sd <- apply(log2_LFQ, 2, sd, na.rm = TRUE)
+stat_per_sample$min <- apply(log2_LFQ, 2, min, na.rm = TRUE)
+stat_per_sample$Q1 <- apply(log2_LFQ, 2, quantile, probs=0.25, na.rm = TRUE)
+stat_per_sample$median <- apply(log2_LFQ, 2, median, na.rm = TRUE)
+stat_per_sample$Q3 <- apply(log2_LFQ, 2, quantile, probs=0.75, na.rm = TRUE)
+stat_per_sample$max <- apply(log2_LFQ, 2, max, na.rm = TRUE)
+
+kable(head(stat_per_sample, n = 10), 
+      digits=3, 
+      caption = "Premières lignes du tableau de statistiques marginales par prélèvement")
+
+```
+
+
 
 ## Boîtes à moustaches (box plot) des valeurs par prélèvement
 
@@ -562,6 +656,8 @@ heatmap(as.matrix(log2_LFQ),
 1. Distinguez vous des particularités au niveau de certaines colonnes ? Si oui, comment les interprétez-vous ?
 
 2. Distinguez vous des particularités au niveau de certaines lignes ? Si oui, comment les interprétez-vous ?
+
+
 
 
 ## Appendix : descriptive statistics : sample parameters
