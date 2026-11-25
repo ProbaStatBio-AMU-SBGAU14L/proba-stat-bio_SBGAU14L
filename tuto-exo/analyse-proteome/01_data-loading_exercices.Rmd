@@ -135,11 +135,14 @@ Les données brutes (que nous n'utiliserons pas pour ce cours) sont accessibles 
 
 L'objectif du TP est de mettre en oeuvre une analyse afin de détecter les protéines dont l’abondance diffère entre les deux tissus, et d'analyser la fonction de ces protéines. 
 
+<!--
 L'organigramme ci-dessous schématise les étapes successives de cette analyse.
 
 ```{r organigramme, echo=FALSE, out.width="100%", fig.align="center", fig.cap="**Organigramme de l'analyse des données protéomiques.** Les étapes successives seront abordées dans des documents Rmarkdown séparés. "}
-knitr::include_graphics("images/organigramme_analyse-proteome.png")
+# knitr::include_graphics("images/organigramme_analyse-proteome.png")
 ```
+
+-->
 
 Le code et l'interprétation des résultats sont organisés en documents R markdown structurés pour effectuer successivement chacune de ces étapes. 
 
