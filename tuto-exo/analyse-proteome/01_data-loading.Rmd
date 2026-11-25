@@ -137,7 +137,9 @@ L'objectif du TP est de mettre en oeuvre une analyse afin de détecter les prot�
 
 L'organigramme ci-dessous schématise les étapes successives de cette analyse.
 
-[A AJOUTER : ORGANIGRAMME]
+```{r organigramme, echo=FALSE, out.width="100%", fig.align="center", fig.cap="**Organigramme de l'analyse des données protéomiques.** Les étapes successives seront abordées dans des documents Rmarkdown séparés. "}
+knitr::include_graphics("images/organigramme_analyse-proteome.png")
+```
 
 Le code et l'interprétation des résultats sont organisés en documents R markdown structurés pour effectuer successivement chacune de ces étapes. 
 
