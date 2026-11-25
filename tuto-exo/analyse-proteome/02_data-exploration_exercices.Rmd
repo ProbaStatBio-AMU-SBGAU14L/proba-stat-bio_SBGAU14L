@@ -117,14 +117,14 @@ RData_previous <- "01_data-loading.RData"
 
 ## Define local directory
 working_dir <- "~/proba_stat_bio_TP/canale_2023"
-data_dir <- file.path(working_dir, "RData")
-dir.create(data_dir, recursive = TRUE, showWarnings = FALSE)
+RData_dir <- file.path(working_dir, 'RData')
+dir.create(RData_dir, recursive = TRUE, showWarnings = FALSE)
 
 ## Define remote and local file paths
 repo_base <- "https://raw.githubusercontent.com/ProbaStatBio-AMU-SBGAU14L/proba-stat-bio_SBGAU14L/main/RData"
 
 RData_url <- paste0(repo_base, "/", RData_previous)
-RData_previous <- file.path(data_dir, RData_previous)
+RData_previous <- file.path(RData_dir, RData_previous)
 
 ## Download only if the local file is missing
 if (!file.exists(RData_previous)) {
@@ -139,8 +139,8 @@ load(RData_previous)
 | | |
 |-----------------------|----------------------------------------------------|
 | Working directory: | `r working_dir` |
-| Data directory: | `r data_dir` |
-| Files present in the data directory | `r list.files(data_dir)` |
+| Data directory: | `r RData_dir` |
+| Files present in the data directory | `r list.files(RData_dir)` |
 
 Les données que vous avez chargées à partir de ces fichiers sont stockées dans les variables R décrites ci-dessous.  
 
@@ -659,8 +659,33 @@ heatmap(as.matrix(log2_LFQ),
 
 
 
+## Sauvegarde des résultats pour les étapes suivantes
 
-## Appendix : descriptive statistics : sample parameters
+Le bloc de code suivant sauve l'état actuel de la mémoire dans un  fichier RData local. 
+
+```{r save_data}
+
+#### Save R objects for the next step ####
+
+## Define the output file
+RData_file <- file.path(RData_dir, "02_data-exploration.RData")
+
+## Save the relevant R objects
+save.image(file = RData_file)
+
+## Report the location of the saved file
+message("Memory image saved in: ", RData_file)
+
+```
+
+Les objets R sont maintenant sauvegardés dans le fichier
+`r RData_file`.
+
+Ils pourront être restaurés au moyen de la fonction `load()`
+au début du prochain document R Markdown.
+
+
+## Annexe : statistiques descriptives
 
 **Note :** les formules ci-dessous sont celles définies pour calculer des paramètres d'échantillons. Ces paramètres visent uniquement à décrire les données disponible.  
 

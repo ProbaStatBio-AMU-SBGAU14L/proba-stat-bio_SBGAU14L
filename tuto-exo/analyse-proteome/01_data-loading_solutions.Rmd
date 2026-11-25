@@ -426,9 +426,9 @@ Les fichiers de sortie de chaque étape sont également disponibles sur le dép�
 #### Save R objects for the next step ####
 
 ## Define the output file
-Rdata_dir <- file.path(data_dir, 'Rdata')
-dir.create(Rdata_dir, showWarnings = FALSE, recursive = TRUE)
-RData_file <- file.path(Rdata_dir, "01_data-loading.RData")
+RData_dir <- file.path(working_dir, 'RData')
+dir.create(RData_dir, showWarnings = FALSE, recursive = TRUE)
+RData_file <- file.path(RData_dir, "01_data-loading.RData")
 
 ## Save the relevant R objects
 save(
