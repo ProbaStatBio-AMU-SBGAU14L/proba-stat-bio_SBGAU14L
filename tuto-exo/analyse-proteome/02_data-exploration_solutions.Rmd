@@ -355,7 +355,7 @@ legend("topright",  ## Position of the legend
        bty="n") ## no border around the legend
 
 
-## Add a legent with the numeric values
+## Add a legend with the numeric values
 legend("topleft",
        legend = c(
          paste0("mean=", round(proteome_parameters$mean, 2)),
