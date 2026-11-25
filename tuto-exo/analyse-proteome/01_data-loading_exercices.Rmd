@@ -381,83 +381,6 @@ write.table(
 
 
 
-## Une première visualisation des données brutes
-
-### Exercice 1 : histogramme des données de départ
-
-
-Nous avons généré ci-dessous un histogramme de base pour représener la distribution de toutes les valeurs quantitatives du protéome, après avoir écarté les valeurs manquantes (*NA*). Cet histogramme fournit une représentation grossière des données, nous aimerions l'améliorer. 
-
-```{r hist_log2_LFQ_altogether, fig.width=7, fig.height=4.5, out.width="100%", fig.cap="Histogram of log2(LFQ) values from Canale's whole proteomics dataset. "}
-## Create a vector with all the numeric values of the proteome quantification
-x <- na.omit(unlist(log2_LFQ))
-
-#### Generate a histogram with the log2(LFQ) values of all the samples together ####
-hist(x)
-
-```
-
-
-1. Lisez la documentation de la fonction `hist()`, en prêtant une attention particulière aux options suivantes: `breaks`, `main`, `xlab`, `ylab`, `col`, `border`, `las`.
-
-2. Améliorez l'histogramme en modifiant 
-
-    - le nombre de classes, 
-    - le titre, 
-    - les étiquettes des axes, 
-    - la couleur, 
-    - les autres paramètres qui vous sembleront pertinents. 
-
-#### Solution de l'exercice 1
-
-```{r hist_log2_LFQ_altogether_pretty, fig.width=8, fig.height=5, out.width="100%", fig.cap="Histogram of log2(LFQ) values from Canale's whole proteomics dataset. "}
-## Create a vector with all the numeric values of the proteome quantification
-x <- na.omit(unlist(log2_LFQ))
-
-#### Generate a histogram with the log2(LFQ) values of all the samples together ####
-hist(x, 
-     main = "Distribution of proteome quantification values", ## Title of the figure
-     xlab = "log2(LFQ)", ## Label on the X axis
-     ylab = "Occurrences", ## Label on the Y axis
-     breaks=100, ## Increase the number of breaks to better evaluate the shape of the distribution
-     las = 1,   ## Display axis labels horizontally
-     col = "lightblue")
-grid() ## Add a discrete grid to mark the X and Y levels
-
-```
-
-
-#### Votre interprétation
-
-Ajoutez ici vos commentaires concernant la forme générale de cet histogramme. *
-
-**Observations: **
-
-- The distribution is asymmetric, with a right-side skew (longer tail on the right than on the left)
-- The distribution is roughly unimodal (a single peak), but we see a "shoulder" between X values 27 and 30
-- Globally, the shape of the distribution does not look to follow a normal distribution or any other specific theoretical distribution
-- **This is not surprising**. Actually,  we don't expect *a priori* that this curve would follow a normal distribution, or any particular distribution, because it represents values for >8000 proteins, each of which is expected to have a specific level (concentration)related to its specific transcriptional and post-transcriptional regulation. 
-
-
-### Carte de couleurs (heatmap) des données de départ
-
-Ci-dessous, nous avons utilisé la fonction `heatmap()` pour dessiner une carte de couleur du tableau `log2_LFQ`. 
-
-- Veillez à désactiver le clustering des lignes et des colonnes (options `Rowv`et `Colv)
-- désactivez également la standardization (option `scale`)
-
-
-```{r heatmap_log2LFQ, fig.width=12, fig.height=12, out.width="100%", fig.cap="**Heatmap of the proteome abundance.**  Rows: proteins;  Columns: samples. The color scale is proportional to  log2(LFQ) values. Note that the data table contains 8192 proteins, whereas the figure is 2304w2304 pixels. Rows of the heatmap thus represent a subset of the proteins. "}
-heatmap(as.matrix(log2_LFQ), 
-        main="Canale (2023), log2(LFQ)",
-        Rowv = NA, 
-        Colv=NA, 
-        scale="none", 
-        labRow=NA,
-        cexCol = 0.7, 
-        xlab = "samples", 
-        ylab = "Proteins log2(LFQ)")
-```
 
 ## Questions pour l'étape de chargement des données
 
@@ -465,30 +388,30 @@ Répondez sous les questions, et compilez le rapport avec knitr (format html, pd
 
 1. Quelles sont les dimensions de la matrice de données ?
 
-    - 8181 lignes x 69 colonnes
+    - **VOTRE_REPONSE** lignes x **VOTRE_REPONSE** colonnes
 
 2. Que représentent les lignes et les colonnes ?
 
-    - Lignes : protéines
-    - Colonnes : prélèvements
+    - Lignes : **VOTRE_REPONSE**
+    - Colonnes : **VOTRE_REPONSE**
 
 3. Combien y a-t-il de protéines,  de prélèvements tissulaires et de  patients dans le tableau de départ ?
 
-    - `r nrow(log2_LFQ)` protéines
-    - `r ncol(log2_LFQ)` prélèvements tissulaires
-    - `r length(unique(sample_groups$sample))` patients
+    - **VOTRE_REPONSE** protéines
+    - **VOTRE_REPONSE** prélèvements tissulaires
+    - **VOTRE_REPONSE** patients
 
 4. Pour combien de patients dispose-t-on des deux types tissulaires ?
 
-    - `r ncol(log2_LFQ_paired)/2`` patients
+    - **VOTRE_REPONSE** patients
 
 5. A quoi correspondent les valeurs numériques dans le tableau ?
 
-    - `log2(LFQ)`, qui résulte de la transformation logarithmique en base 2 des mesures LFQ ( Label-Free Quantification), obtenues en mesurant la surface sous les pics de spectrométrie de masse. 
+    - **VOTRE_REPONSE**
 
 6. A quoi correspondent les valeurs manquantes ?
 
-    - des protéines dont l'abondance est trop faible pour être détectées, ou pour laquelle on a rencontré des difficultés tehcniques dans le traitement ultérieur de leur mesure. 
+    - **VOTRE_REPONSE**
 
 ## Sauvegarde des données pour les étapes suivantes
 
