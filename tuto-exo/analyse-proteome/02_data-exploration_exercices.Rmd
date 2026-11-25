@@ -162,7 +162,7 @@ Si le chargement s'est bien passé, les nombres de lignes et de colonnes devraie
 
 ## Distribution globale des données de départ
 
-### Exercice 1 : histogramme global des données
+### Exercice : histogramme global des données
 
 Nous avons généré ci-dessous un histogramme de base pour représener la distribution de toutes les valeurs quantitatives du protéome, après avoir écarté les valeurs manquantes (*NA*). Cet histogramme fournit une représentation grossière des données, que nous voudrons améliorer. 
 
@@ -217,39 +217,11 @@ Ajoutez ici vos commentaires concernant la forme générale de cet histogramme. 
 - **This is not surprising**. Actually,  we don't expect *a priori* that this curve would follow a normal distribution, or any particular distribution, because it represents values for >8000 proteins, each of which is expected to have a specific level (concentration)related to its specific transcriptional and post-transcriptional regulation. 
 
 
-## Carte de couleurs (heatmap) des données de départ
-
-Ci-dessous, nous avons utilisé la fonction `heatmap()` pour dessiner une carte de couleur du tableau `log2_LFQ`. 
-
-- Veillez à désactiver le clustering des lignes et des colonnes (options `Rowv`et `Colv)
-- désactivez également la standardization (option `scale`)
-
-
-```{r heatmap_log2LFQ, fig.width=12, fig.height=12, out.width="100%", fig.cap="**Heatmap of the proteome abundance.**  Rows: proteins;  Columns: samples. The color scale is proportional to  log2(LFQ) values. Note that the data table contains 8192 proteins, whereas the figure is 2304w2304 pixels. Rows of the heatmap thus represent a subset of the proteins. "}
-heatmap(as.matrix(log2_LFQ), 
-        main="Canale (2023), log2(LFQ)",
-        Rowv = NA, 
-        Colv=NA, 
-        scale="none", 
-        labRow=NA,
-        cexCol = 0.7, 
-        xlab = "samples", 
-        ylab = "Proteins log2(LFQ)")
-```
-
-
-### Vos observations concernant cette heatmap
-
-1. Distinguez vous des particularités au niveau de certaines colonnes ? Si oui, comment les interprétez-vous ?
-
-2. Distinguez vous des particularités au niveau de certaines lignes ? Si oui, comment les interprétez-vous ?
-
-
-## Réduction des données
+## Calcul des indicateurs globaux
 
 Le tableau en annexe 1 récapitule les principales statistiques utilisées pour caractériser les propriétés d'un jeu de données quantitatives. 
 
-### Exercice 2 : calcul des indicateurs sur l'ensemble des données
+### Exercice : calcul des indicateurs sur l'ensemble des données
 
 Calculez les paramètres suivants sur l'ensemble des données du tableau de quantification du protéome. Stockez les paramètres dans une liste nommée `proteome_parameters`, en associant les étiquettes suivantes aux paramètres. 
 
@@ -305,7 +277,7 @@ kable(unlist(proteome_parameters), col.names = "values", caption = "Descriptive 
 ```
 
 
-### Exercice 3 : histogramme avec les indicateurs de tendance centrale et de dispersion
+### Exercice : marquage des indicateurs sur l'histogramme des valeurs
 
 Nous avons retracé l'histogramme des valeurs de quantification, en utilisant les fonctions `ablines()` pour marquer la moyenne, et `arrows()` pour dessiner un intervalle couvrant 1 écart-type de chaque côté de la moyenne. Lisez l'aide des fonctions `abline` et `arrows` en faisant le lien entre les arguments utilisés et le résultat graphique. Ajouter ensuite les instructions pour dessiner également : 
 
@@ -397,9 +369,9 @@ legend("topleft",
 ```
 
 
-### Statistiques marginales : statistiques par ligne (protéine)
+## Statistiques marginales : statistiques par ligne (protéine)
 
-#### Exercice 4
+### Exercice : calcul des statistiques par protéine
 
 Dans le bloc de code ci-dessous, nous avons utilisé la fonction `apply()` pour  calculer la moyenne de chaque protéine, et nous avons stocké le résultat dans un vecteur nommé `mean_per_protein`. Notez que nous avons ajouté l'option `na.rm = TRUE`, que la fonction `apply()` transmet à la fonction `mean()`. 
 
@@ -465,22 +437,16 @@ plot(mean_per_protein, sd_per_protein,
 ```
 
 
-### Statistiques marginales : statistiques par colonne (échantillon)
+## Statistiques marginales : statistiques par colonne (échantillon)
 
-#### Exercice 5
+### Exercice : calcul des statistiques par colonne
 
 - utilisez la fonction `apply()` pour calculer la moyenne par colonne (échantillon), et stockez le résultat dans un vecteur nommé `mean_per_sample`
 - utilisez la fonction `barplot()` pour visualiser les moyennes
 
 ```{r barplot_mean_per_sample, fig.height=4, fig.width=12, out.width="100%", fig.cap="Barplot of the mean per sample"}
 ### Draw a barplot with the mean per sample (column) of the proteome table
-
 mean_per_sample <- apply(log2_LFQ, 2, mean, na.rm=TRUE)
-# barplot(mean_per_sample,
-#         main = "Mean per sample",
-#         cex.names = 0.5,
-#         horiz=TRUE,
-#         las = 1)
 barplot(mean_per_sample,
         main = "Mean per sample",
         cex.names = 0.5,
@@ -488,14 +454,13 @@ barplot(mean_per_sample,
         horiz = FALSE,
         las = 2)
 
-
 ```
 
-### Box plot
+## Boîtes à moustaches (box plot) des valeurs par prélèvement
 
-#### Exercice 6
+### Exercice : boîtes à moustache
 
-utilisez la fonction  R `boxplot()` pour visualiser ces données sous forme de boîtes à moustaches. Utilisez différentes options pour rendre cette figure aussi claire que possible. *
+Utilisez la fonction  R `boxplot()` pour visualiser ces données sous forme de boîtes à moustaches (*box plot*). Utilisez différentes options pour rendre cette figure aussi claire que possible. 
 
 **Astuces :**
 - il existe une option permettant d'afficher les boîtes à moustaches horizontalement, ce qui facilite la lecture des étiquettes associées à chaque échantillon
@@ -513,16 +478,31 @@ sample_groups$color <- group_colors[sample_groups$group]
 boxplot(log2_LFQ, 
         horizontal = TRUE, 
         las=1, 
-        cex.axis=0.7, 
+        cex.axis=0.6, 
         col=sample_groups$color, 
         main="Box plot of proteomics data", 
         xlab="log2(LFQ)")
-legend("bottomright", legend = names(group_colors), fill = group_colors, cex = 0.9)
+legend("bottomright", legend = names(group_colors), fill = group_colors, cex = 0.8)
 
 ```
-**Votre interprétation : ** observez la médiane et l'espace inter-quartile des échantillons. Identifiez les échantillons qui auraient une distribution différente des autres. 
 
-### Violin plot
+
+### Votre interprétation
+
+1. Dans ces boîtes à moustache, que représentent
+    - les rectangles colorés
+    - les barres épaisses au milieu de ces rectangles
+    - les lignes pointillées
+    - les cercles aux extrémités de ces lignes
+
+2. Commentez l'alignement général des boîtes à moustaches (position de la barre centrale)
+
+3. Observez la médiane et l'espace inter-quartile des échantillons. Identifiez-vous des échantillons atpiques ? Si oui, notez leurs identifiants, nous reviendrons dessus ultérieurement. 
+
+
+## Diagramme en violon (*violin plot*) des valeurs par prélèvement
+
+**Cette section est facultative.** Ne la faites que si vous avez suffisamment d'avance sur le TP, sinon passez à la section suivante. 
 
 Installez la librairie `vioplot` et chargez-la dans R. 
 
@@ -552,7 +532,8 @@ legend("bottomright", legend = names(group_colors), fill = group_colors, cex = 0
 ```
 
 
-### Heat map of the log2(LFQ)
+
+## Carte de couleurs (heatmap) des données de départ
 
 Ci-dessous, nous avons utilisé la fonction `heatmap()` pour dessiner une carte de couleur du tableau `log2_LFQ`. 
 
@@ -571,6 +552,14 @@ heatmap(as.matrix(log2_LFQ),
         xlab = "samples", 
         ylab = "Proteins log2(LFQ)")
 ```
+
+
+### Exercice : votre interprétation de la carte des couleurs
+
+1. Distinguez vous des particularités au niveau de certaines colonnes ? Si oui, comment les interprétez-vous ?
+
+2. Distinguez vous des particularités au niveau de certaines lignes ? Si oui, comment les interprétez-vous ?
+
 
 
 ## Protein filtering
