@@ -1,72 +1,75 @@
 ---
 title: "Tuto-TP – Téléchargement et chargement des données"
 author: "Jacques van Helden (ORCID [0000-0002-8799-8584](https://orcid.org/0000-0002-8799-8584))"
-date: '`r Sys.Date()`'
-subtitle: Proba/stat pour la biologie (SBGAU14L)
+date: "`r Sys.Date()`"
 output:
   html_document:
-    self_contained: yes
-    fig_caption: yes
+    self_contained: true
+    fig_caption: true
     highlight: zenburn
     theme: cerulean
-    toc: yes
+    toc: true
     toc_depth: 3
-    toc_float: yes
-    code_folding: "hide"
+    toc_float: true
+    code_folding: hide
   ioslides_presentation:
     slide_level: 2
-    self_contained: TRUE
+    self_contained: true
     colortheme: dolphin
-    fig_caption: yes
+    fig_caption: true
     fig_height: 5
     fig_width: 7
     fonttheme: structurebold
     highlight: tango
-    smaller: yes
-    toc: yes
-    widescreen: yes
-  pdf_document:
-    fig_caption: yes
-    highlight: zenburn
-    toc: yes
-    toc_depth: 3
+    smaller: true
+    toc: true
+    widescreen: true
+  word_document:
+    toc: true
+    toc_depth: '3'
   beamer_presentation:
     colortheme: dolphin
-    fig_caption: yes
+    fig_caption: true
     fig_height: 5
     fig_width: 7
     fonttheme: structurebold
     highlight: tango
-    incremental: no
-    keep_tex: no
+    incremental: false
+    keep_tex: false
     slide_level: 2
     theme: Montpellier
-    toc: yes
+    toc: true
   revealjs::revealjs_presentation:
     theme: night
     transition: none
     self_contained: true
     css: ../slides.css
   slidy_presentation:
-    smart: no
+    smart: false
     slide_level: 2
-    self_contained: yes
-    fig_caption: yes
+    self_contained: true
+    fig_caption: true
     fig_height: 5
     fig_width: 7
     highlight: tango
-    incremental: no
-    keep_md: yes
-    smaller: yes
+    incremental: false
+    keep_md: true
+    smaller: true
     theme: cerulean
-    toc: yes
-    widescreen: yes
+    toc: true
+    widescreen: true
   powerpoint_presentation:
     slide_level: 2
-    fig_caption: yes
+    fig_caption: true
     fig_height: 5
     fig_width: 7
-    toc: yes
+    toc: true
+  pdf_document:
+    fig_caption: true
+    highlight: zenburn
+    toc: true
+    toc_depth: 3
+subtitle: Proba/stat pour la biologie (SBGAU14L)
 ---
 
 
@@ -112,7 +115,7 @@ Nous analysons ici un jeu de données protéomiques de Canale et al. (2023), qui
 Pour chaque patient, deux échantillons biologiques ont été prélevés :
 
 - HCC : tissu hépatique tumoral de carcinome hépatocellulaire (34 échantillons)
-- Liver : tissu non tumoral adjacent au carcinome hépatocellulaire (35 échantillons )
+- Liver : tissu non tumoral adjacent au carcinome hépatocellulaire (35 "échantillons )
 
 Notons d'emblée que pour certains patients il manque l'une ou l'autres des observations, de sorte qu'il n'y a que 31 paires d'observations appariéés (prises sur le même patient). 
 
@@ -204,19 +207,13 @@ for (f in files) {
 Nous chargeons dans R les 3 fichiers de données de départ fournis pour ce TP : 
 
 | Fichier | Contenu |
-|:----------------:|:-----------------------------------------––|
-| `canale_2023_protein_log2-LFQ.tsv` | quantification de l'abondance de chaque protéine (ligne) dans chaque échantillon (colonne). Les données sont fournies en unité log2(LFQ), qui résultent de la transformation logarithmique en base 2 des mesures LFQ (Label-Free Quantification) |
-| `canale_2023_protein-names.tsv` | Noms et descriptions des protéines et des gènes | 
-| `sample_groups.tsv` | correspondance entre les identifiants d'échantillons, les types de prélèvements (foie non-cancéreux ou carcinome hépatocellulaire), et les identifiants de patients (nombres) |
+|:----------------:|:-----------------------------------------|
+| `canale_2023_protein_log2-LFQ.tsv` | quantification de l'abondance de chaque protéine (ligne) dans chaque échantillon (colonne). Les données sont fournies en unité log2(LFQ), qui résultent de la transformation logarithmique en base 2 des mesures LFQ (Label-Free Quantification). **Note:** la premièreb colonne du fichier TSV contient les identifiants des protéines, et la première ligne les identifiants des prélèvements.  |
+| `canale_2023_protein-names.tsv` | Noms et descriptions des protéines (lignes). Les colonnes indiquent les identifiants de protéines, les noms de protéines et les noms de gènes. A noter : (1) une même protéine peut avoir un ou plusieurs ID différents selon les bases de données de référence; (2)  certaines n'ont aucun nom de protéine ou de gènes ; (3) certaines protéines ou gènes ont plusieurs noms (synonymes) | 
+| `sample_groups.tsv` | correspondance entre les identifiants d'échantillons, les types de prélèvements (foie non-cancéreux ou carcinome hépatocellulaire), et les identifiants de patients (nombres). Pour cette analyse, le jeu de données ne contient que 2 groupes: **HCC**  (carcinomes hépatocellulaires) pour les prélèvements de carcinomes hépatocellulaires, et **liver** pour les prélèvements dans des tissus de foie non-tumoraux adjacents |
 
 Les trois fichiers sont fournis en format "tab-separated values" (colonnes séparées par des tabulations), avec l'extension `.tsv`. 
 
-
-| File | Content |
-|------------------------------|-------------------------------------------|
-| `canale_2023_protein_log2-LFQ.tsv` | The proteomics quantification table, with one row per protein, and one column per sample. Note that the first column provides protein IDs, and the first row sample IDs |
-| `canale_2023_protein-names.tsv` | One row per protein, and columns with the protein IDs, protein names and gene names. Note that a protein can have one or more IDs (allocated by different databases), and zero, one or more protein or gene names (some proteins/genes of unknown function have no name, ans some proteins/genes can have several synonyms). |
-| `sample_groups.tsv` | A 3-columns tab-separated files containing one row per sample ID (first column, used as row names), and its decomposition in two fields indicating the group to which each sample belongs, and the patient ID (number). In this study case, there are only two groups : **HCC** for Human cancer cells, and **Liver** for liver cells.
 
 ```{r data_loading}
 message("Loading the datasets")
@@ -244,7 +241,7 @@ protein_names = read.delim(
 )
 ```
 
-The data and metadata files have been loaded in the following R variables. 
+Les données que vous avez chargées à partir de ces fichiers sont stockées dans les variables R décrites ci-dessous.  
 
 | Variable | Rows | Columns | Content | 
 |-------------|-----|------|------------------------------------|
@@ -252,17 +249,28 @@ The data and metadata files have been loaded in the following R variables.
 | `protein_names` | `r nrow(protein_names)` | `r ncol(protein_names)` | Protein identifiers, protein names and gene names. One row per protein |
 | `sample_groups` | `r nrow(sample_groups)` | `r ncol(sample_groups)` | One row per sample, two columns inidicating its group and its patient identifier (number) |
 
-In the table above, check carefully the consistency between the dimensions of the 3 tables : 
 
-- `protein_names` should have the same number of rows as `log2_LFQ` (one row per protein)
-- the number of rows of `sample_groups` (one row per sample) should equal the number of columns of `log2_LFQ` (one column per sample)
+Dans cette table, vérifiez que les dimensions sont cohérentes entre les tables qui fournissent des informations complémentaires. 
+
+- le nombre de lignes de `protein_names` doit être identique à celui de `log2_LFQ` (une ligne par protéine)
+- le nombre de ligne de `sample_groups` (une ligne par prélèvement) doit être égal au nombre de colonnes de `log2_LFQ` (une colonne par prélèvement)
+
+Contrôlez également la correspondance entre les dimensions ci-dessus, qui correspondent aux données que vous avez chargées, et celles attendues indiquées ci-dessous. Si ces nombres ne correspondent pas, vérifiez que le téléchargement et le chargement se soient déroulés correctement. 
+
+| Variable | Rows | Columns | Content | 
+|-------------|-----|------|------------------------------------|
+| `log2_LFQ` | 8182 | 69 | Protein quantification table, in log2(LFQ), where LFQ stands for label-free quantification. One row per protein, one column per sample |
+| `protein_names` | 8182 | 5 | Protein identifiers, protein names and gene names. One row per protein |
+| `sample_groups` | 69 | 2 | One row per sample, two columns inidicating its group and its patient identifier (number) |
+
+
 
 ## Assignation des couleurs aux groupes et aux échantillons
 
 Le bloc de code suivant définit assigne une coleur à chaque groupe, et aux échantillons correspondants : 
 
-- HCC : violet
-- Liver : jaune
+- HCC : orange pâle
+- Liver : vert pâle
 
 
 ```{r sample_colors}
@@ -281,8 +289,8 @@ sample_groups$group <- trimws(as.character(sample_groups$group))
 
 ## Define one color per tissue type
 group_colors <- c(
-  HCC = "violet",
-  Liver = "yellow"
+  HCC = "#FFDDCC",
+  Liver = "#DDFFDD"
 )
 
 ## Check group labels
@@ -373,7 +381,7 @@ write.table(
 
 ## Une première visualisation des données brutes
 
-### Histogramme des données de départ
+### Exercice 1 : histogramme des données de départ
 
 
 Nous avons généré ci-dessous un histogramme de base pour représener la distribution de toutes les valeurs quantitatives du protéome, après avoir écarté les valeurs manquantes (*NA*). Cet histogramme fournit une représentation grossière des données, nous aimerions l'améliorer. 
@@ -387,7 +395,6 @@ hist(x)
 
 ```
 
-#### Exercice 1
 
 1. Lisez la documentation de la fonction `hist()`, en prêtant une attention particulière aux options suivantes: `breaks`, `main`, `xlab`, `ylab`, `col`, `border`, `las`.
 
@@ -399,7 +406,7 @@ hist(x)
     - la couleur, 
     - les autres paramètres qui vous sembleront pertinents. 
 
-
+#### Solution de l'exercice 1
 
 ```{r hist_log2_LFQ_altogether_pretty, fig.width=8, fig.height=5, out.width="100%", fig.cap="Histogram of log2(LFQ) values from Canale's whole proteomics dataset. "}
 ## Create a vector with all the numeric values of the proteome quantification
@@ -417,7 +424,10 @@ grid() ## Add a discrete grid to mark the X and Y levels
 
 ```
 
-3. ***Votre interprétation : ** ajoutez ici vos commentaires concernant la forme générale de cet histogramme. *
+
+#### Votre interprétation
+
+Ajoutez ici vos commentaires concernant la forme générale de cet histogramme. *
 
 **Observations: **
 
@@ -427,7 +437,7 @@ grid() ## Add a discrete grid to mark the X and Y levels
 - **This is not surprising**. Actually,  we don't expect *a priori* that this curve would follow a normal distribution, or any particular distribution, because it represents values for >8000 proteins, each of which is expected to have a specific level (concentration)related to its specific transcriptional and post-transcriptional regulation. 
 
 
-### Heat map des données de départ
+### Carte de couleurs (heatmap) des données de départ
 
 Ci-dessous, nous avons utilisé la fonction `heatmap()` pour dessiner une carte de couleur du tableau `log2_LFQ`. 
 
@@ -446,4 +456,76 @@ heatmap(as.matrix(log2_LFQ),
         xlab = "samples", 
         ylab = "Proteins log2(LFQ)")
 ```
+
+## Questions pour l'étape de chargement des données
+
+Répondez sous les questions, et compilez le rapport avec knitr (format html, pdf ou word selon vos préférences). 
+
+1. Quelles sont les dimensions de la matrice de données ?
+
+    - 8181 lignes x 69 colonnes
+
+2. Que représentent les lignes et les colonnes ?
+
+    - Lignes : protéines
+    - Colonnes : prélèvements
+
+3. Combien y a-t-il de protéines,  de prélèvements tissulaires et de  patients dans le tableau de départ ?
+
+    - `r nrow(log2_LFQ)` protéines
+    - `r ncol(log2_LFQ)` prélèvements tissulaires
+    - `r length(unique(sample_groups$sample))` patients
+
+4. Pour combien de patients dispose-t-on des deux types tissulaires ?
+
+    - `r ncol(log2_LFQ_paired)/2`` patients
+
+5. A quoi correspondent les valeurs numériques dans le tableau ?
+
+    - `log2(LFQ)`, qui résulte de la transformation logarithmique en base 2 des mesures LFQ ( Label-Free Quantification), obtenues en mesurant la surface sous les pics de spectrométrie de masse. 
+
+6. A quoi correspondent les valeurs manquantes ?
+
+    - des protéines dont l'abondance est trop faible pour être détectées, ou pour laquelle on a rencontré des difficultés tehcniques dans le traitement ultérieur de leur mesure. 
+
+## Sauvegarde des données pour les étapes suivantes
+
+Afin de faciliter la réalisation des étapes suivantes de l'analyse, nous sauvegardons dans un fichier au format `RData` les principaux objets R générés au cours de cette première étape. Ce format permet de sauvegarder plusieurs objets R dans un même fichier, en conservant leurs noms, leurs types et leurs structures.
+
+Nous pourrons ainsi charger directement ces objets au début de l'étape suivante, sans devoir télécharger et charger à nouveau les fichiers de données originaux.
+
+Les fichiers de sortie de chaque étape sont également disponibles sur le dépôt github du cours, pour vous vous permettre de démarrer une étape dans les bonnes conditions, même si vous avez rencontré des difficultés au cours de l'étape précédente. 
+
+```{r save_data}
+
+#### Save R objects for the next step ####
+
+## Define the output file
+Rdata_dir <- file.path(data_dir, 'Rdata')
+dir.create(Rdata_dir, showWarnings = FALSE, recursive = TRUE)
+RData_file <- file.path(Rdata_dir, "01_data-loading.RData")
+
+## Save the relevant R objects
+save(
+  log2_LFQ,
+  sample_groups,
+  protein_names,
+  log2_LFQ_paired,
+  sample_groups_paired,
+  paired_patients,
+  group_colors,
+  file = RData_file
+)
+
+## Report the location of the saved file
+message("R objects saved in: ", RData_file)
+
+```
+
+Les objets R sont maintenant sauvegardés dans le fichier
+`r RData_file`.
+
+Ils pourront être restaurés au moyen de la fonction `load()`
+au début du prochain document R Markdown.
+
 
