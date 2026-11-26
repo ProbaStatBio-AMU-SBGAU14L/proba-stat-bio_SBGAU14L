@@ -135,11 +135,13 @@ Les données brutes (que nous n'utiliserons pas pour ce cours) sont accessibles 
 
 L'objectif du TP est de mettre en oeuvre une analyse afin de détecter les protéines dont l’abondance diffère entre les deux tissus, et d'analyser la fonction de ces protéines. 
 
+<!--
 L'organigramme ci-dessous schématise les étapes successives de cette analyse.
 
 ```{r organigramme, echo=FALSE, out.width="100%", fig.align="center", fig.cap="**Organigramme de l'analyse des données protéomiques.** Les étapes successives seront abordées dans des documents Rmarkdown séparés. "}
 knitr::include_graphics("images/organigramme_analyse-proteome.png")
 ```
+-->
 
 Le code et l'interprétation des résultats sont organisés en documents R markdown structurés pour effectuer successivement chacune de ces étapes. 
 
@@ -379,7 +381,99 @@ write.table(
 )
 ```
 
+## Organisation des données appariées et calcul des différences individuelles
 
+Nous réorganisons les colonnes du tableau de quantification de façon à
+regrouper les prélèvements par type tissulaire (Liver puis HCC), en
+respectant le même ordre de patients dans les deux groupes.
+
+Nous calculons ensuite, pour chaque protéine et chaque patient, la
+différence entre les abondances logarithmiques des deux tissus
+($D = X_{HCC} - X_{Liver}$).
+
+```{r paired_differences_export}
+
+## Code implemented by ChatGPT and revised by JvH
+
+#### Reorder paired samples and compute individual differences ####
+
+## Sort patient IDs numerically
+paired_patients <- sort(as.integer(paired_patients))
+
+## Define sample IDs in the same patient order
+Liver_samples <- paste0("Liver_", paired_patients)
+HCC_samples <- paste0("HCC_", paired_patients)
+
+## Check the correspondence between paired samples
+stopifnot(
+  identical(
+    sample_groups_paired[Liver_samples, "sample"],
+    sample_groups_paired[HCC_samples, "sample"]
+  )
+)
+
+## Reorder the quantification table (Liver first, then HCC)
+log2_LFQ_paired <- log2_LFQ_paired[
+  , c(Liver_samples, HCC_samples), drop = FALSE
+]
+
+## Reorder sample metadata accordingly
+sample_groups_paired <- sample_groups_paired[
+  colnames(log2_LFQ_paired), , drop = FALSE
+]
+
+## Split the quantification table by tissue type
+log2_LFQ_Liver <- log2_LFQ_paired[
+  , Liver_samples, drop = FALSE
+]
+
+log2_LFQ_HCC <- log2_LFQ_paired[
+  , HCC_samples, drop = FALSE
+]
+
+## Use patient IDs as column names in both tables
+colnames(log2_LFQ_Liver) <- paired_patients
+colnames(log2_LFQ_HCC) <- paired_patients
+
+## Check the correspondence between the two tables
+stopifnot(
+  identical(
+    dimnames(log2_LFQ_Liver),
+    dimnames(log2_LFQ_HCC)
+  )
+)
+
+## Compute individual differences (HCC - Liver)
+log2_LFQ_diff <- log2_LFQ_HCC - log2_LFQ_Liver
+
+#### Export data tables in Excel format ####
+
+## Install the openxlsx package if necessary
+if (!requireNamespace("openxlsx", quietly = TRUE)) {
+  install.packages("openxlsx")
+}
+
+## Export the paired quantification table
+openxlsx::write.xlsx(
+  log2_LFQ_paired,
+  file = file.path(data_dir, "canale_2023_log2-LFQ_paired.xlsx"),
+  rowNames = TRUE,
+  keepNA = TRUE,
+  na.string = "NA",
+  overwrite = TRUE
+)
+
+## Export the individual differences
+openxlsx::write.xlsx(
+  log2_LFQ_diff,
+  file = file.path(data_dir, "canale_2023_log2-LFQ_diff.xlsx"),
+  rowNames = TRUE,
+  keepNA = TRUE,
+  na.string = "NA",
+  overwrite = TRUE
+)
+
+```
 
 
 ## Questions pour l'étape de chargement des données
@@ -413,11 +507,10 @@ Répondez sous les questions, et compilez le rapport avec knitr (format html, pd
 
     - des protéines dont l'abondance est trop faible pour être détectées, ou pour laquelle on a rencontré des difficultés tehcniques dans le traitement ultérieur de leur mesure. 
 
-## Sauvegarde des données pour les étapes suivantes
+## Sauvegarde des données et résultats pour les étapes suivantes
 
-Afin de faciliter la réalisation des étapes suivantes de l'analyse, nous sauvegardons dans un fichier au format `RData` les principaux objets R générés au cours de cette première étape. Ce format permet de sauvegarder plusieurs objets R dans un même fichier, en conservant leurs noms, leurs types et leurs structures.
+Afin de faciliter la réalisation des étapes suivantes de l'analyse, nous sauvegardons dans un fichier au format `RData` avec l'ensemble des données en mémoire au terme de cette première étape. Ce format permet de sauvegarder l'ensemble des objets R dans un même fichier, en conservant leurs noms, leurs types et leurs structures.
 
-Nous pourrons ainsi charger directement ces objets au début de l'étape suivante, sans devoir télécharger et charger à nouveau les fichiers de données originaux.
 
 Les fichiers de sortie de chaque étape sont également disponibles sur le dépôt github du cours, pour vous vous permettre de démarrer une étape dans les bonnes conditions, même si vous avez rencontré des difficultés au cours de l'étape précédente. 
 
@@ -431,26 +524,17 @@ dir.create(RData_dir, showWarnings = FALSE, recursive = TRUE)
 RData_file <- file.path(RData_dir, "01_data-loading.RData")
 
 ## Save the relevant R objects
-save(
-  log2_LFQ,
-  sample_groups,
-  protein_names,
-  log2_LFQ_paired,
-  sample_groups_paired,
-  paired_patients,
-  group_colors,
-  file = RData_file
-)
+save.image(file = RData_file,compress = TRUE)
 
 ## Report the location of the saved file
 message("R objects saved in: ", RData_file)
 
 ```
 
-Les objets R sont maintenant sauvegardés dans le fichier
-`r RData_file`.
+L'image mémoire de cette session a été sauvegardée dans le fichier
 
-Ils pourront être restaurés au moyen de la fonction `load()`
-au début du prochain document R Markdown.
+- `r RData_file`.
+
+Elle pourra être restaurés au moyen de la fonction `load()` au début du prochain document R Markdown.
 
 
