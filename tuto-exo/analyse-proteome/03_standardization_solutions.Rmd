@@ -471,8 +471,8 @@ Utilisez la fonction  R `boxplot()` pour visualiser ces données sous forme de b
 # boxplot(log2_LFQ)
 
 ## Define colors per sample according to the sample group
-#ifelse(test = sample_groups$group == "HCC", "violet", "yellow")
-group_colors <- c("HCC"="violet", Liver="yellow")
+#ifelse(test = sample_groups$group == "HCC", "violet", "#DDFFDD")
+group_colors <- c("HCC"="#FFDDDD", Liver="#DDFFDD")
 sample_groups$color <- group_colors[sample_groups$group]
 
 boxplot(log2_LFQ, 
