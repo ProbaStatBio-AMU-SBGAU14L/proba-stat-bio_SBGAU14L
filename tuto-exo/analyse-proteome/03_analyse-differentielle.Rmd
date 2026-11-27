@@ -329,9 +329,12 @@ abline(a = 0, b = 1, col = "brown", lwd=2)
 
 
 ****************************************************************
-## Réalisation d'un test de Welch
+## Analyse différentielle pour une protéine d'intérêt
 
 
+Canale et ses collaborateurs (2023) ont appliqué un test de Welch pour détecter les protéines dont l'abondance diffère entre tissus tumoraux et non-tumoraux. 
+
+Nous réalisons ci-dessous le test de Welch pour une protéine particulière. 
 
 ```{r welch_one_protein}
 
@@ -352,7 +355,102 @@ print(welch_results)
 ```
 
 
+
 **Interprétation**
+
+****************************************************************
+## Contrôle qualité et filtrage
+
+Dans le tableau des différences (`log2_LFQ_diff`), nous calculons, pour chaque colonne (prélèvement) et pour chaque ligne (protéine) : 
+
+- le nombre de valeurs numériques
+- le nombre de valeurs manquantes (`NA`)
+
+**Astuces :** 
+
+- la fonction `is.na()` produit un tableau Booléen indiquant le statut de chaque cellule : TRUE pour les valeurs manquantes, FALSE pour les cellules contenant une valeur
+- l'opérateur NOT (point d'exclammation `!`) inverse les valeurs Booléennes
+- sur les données Booléennes, la fonction `sum()` compte le nombre de valeurs TRUE
+- la fonction `apply()` est utilisée pour calculer les statistiques marginales, sur les lignes (MARGIN=1) ou sur les colonnes (MARGIN=2)
+
+
+
+
+### Nombre de valeurs numériques par protéine
+
+L'histogramme ci-dessous indique le nombre de valeurs par protéine dans le tableau de différences $D = X_{HCC} - X_{liver}$.  
+
+```{r qc_per_protein, fig.width=7, fig.height=5, out.width="60%", fig.cap="Nombre de valeurs numériques par protéine dans le tableau des différences d'abondance. "}
+## Count the number of provided and missing values per protein (rows)
+
+qc_per_protein <- data.frame(
+  ok_values = apply(X = !is.na(log2_LFQ_diff), MARGIN = 1, FUN = sum),
+  missing = apply(X = is.na(log2_LFQ_diff), MARGIN = 1, FUN = sum))
+
+hist(qc_per_protein$ok_values, breaks=-0.5:(max(qc_per_protein$ok_values) + 0.5),
+     main = "Protein-wise quality control",
+     xlab = "Number of samples with a numeric value",
+     ylab = "Number of proteins",
+     las = 1,
+     col = "palegreen")
+
+```
+
+### Exercice : nombre de valeurs par protéine
+
+Comment interprétez-vous cet histogramme ? 
+
+- A quoi correspond la classe la plus à gauche ?
+
+    - **VOTRE REPONSE**
+
+- A quoi correspond la classe la plus à droite ?
+
+    - **VOTRE REPONSE**
+
+- Que vous indique la forme de l'histogramme en terme de qualité des données ?
+
+    - **VOTRE REPONSE**
+
+
+### Nombre de valeurs numériques par patient
+
+L'histogramme ci-dessous indique le nombre de valeurs numériques par patient dans le tableau de différences $D = X_{HCC} - X_{liver}$.  
+
+```{r qc_per_patient, fig.height=12, fig.width=8, out.width="60%", fig.cap="Nombre de valeurs numériques par patient dans le tableau de différences d'abondance. "}
+## Count the number of provided and missing values per sampe (column)
+
+qc_per_patient <- data.frame(
+  ok_values = apply(X = !is.na(log2_LFQ_diff), MARGIN = 2, FUN = sum),
+  missing = apply(X = is.na(log2_LFQ_diff), MARGIN = 2, FUN = sum))
+
+barplot(qc_per_patient$ok_values,
+        names.arg = paste0("patient_", rownames(qc_per_patient)),
+        main = "Number of values per patient",
+        horiz = TRUE, 
+        las=1, 
+        col="palegreen", 
+        cex.names = 0.5)
+
+
+```
+
+### Exercice : nombre de valeurs numériques par patient
+
+Comment interprétez-vous cet histogramme ? 
+
+- Quel est approximativement le nombre maximal de valeurs numériques $D$ par patient ?
+
+    - **VOTRE REPONSE**
+
+- Quel est approximativement le nombre minimal de valeurs numériques $D$ par patient ?
+
+    - **VOTRE REPONSE**
+
+- Que vous indique l'inspection de ce diagramme à bâtons en terme de qualité des données par patient ?
+
+    - **VOTRE REPONSE**
+
 
 ****************************************************************
 ## Analyse différentielle du protéome
