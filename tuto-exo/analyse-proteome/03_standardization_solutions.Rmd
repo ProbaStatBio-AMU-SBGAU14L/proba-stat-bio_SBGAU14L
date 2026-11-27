@@ -113,7 +113,7 @@ options(scipen = 12) ## Max number of digits for non-scientific notation
 ```{r data_reload}
 #### Load data from the previous step ####
 
-RData_previous <- "01_data-loading.RData"
+RData_previous <- "RData/02_data-exploration.RData"
 
 ## Define local directory
 working_dir <- "~/proba_stat_bio_TP/canale_2023"
@@ -160,511 +160,14 @@ Si le chargement s'est bien passé, les nombres de lignes et de colonnes devraie
 | `sample_groups` | 69 | 2 | 
 
 
-## Distribution globale des données de départ
 
-### Exercice : histogramme global des données
 
-Nous avons généré ci-dessous un histogramme de base pour représener la distribution de toutes les valeurs quantitatives du protéome, après avoir écarté les valeurs manquantes (*NA*). Cet histogramme fournit une représentation grossière des données, que nous voudrons améliorer. 
+## Standardisation par ligne (par protéine)
 
-```{r hist_log2_LFQ_altogether, fig.width=7, fig.height=4.5, out.width="100%", fig.cap="Histogram of log2(LFQ) values from Canale's whole proteomics dataset. "}
-## Create a vector with all the numeric values of the proteome quantification
-x <- na.omit(unlist(log2_LFQ))
+Nous procédons à une standardisation par ligne afin d'obtenir, pour chaque protéine, des valeurs dont la moyenne est ramenée à 0 et l'écart-type à 1. 
 
-#### Generate a histogram with the log2(LFQ) values of all the samples together ####
-hist(x)
+Il faut noter que la standardisation par ligne sert ici à produire une carte des couleurs (heatmap) complémentaire à celle obtenue précédemment avec les log2(LFQ) de départ. 
 
-```
-
-
-1. Lisez la documentation de la fonction `hist()`, en prêtant une attention particulière aux options suivantes: `breaks`, `main`, `xlab`, `ylab`, `col`, `border`, `las`.
-
-2. Améliorez l'histogramme en modifiant 
-
-    - le nombre de classes, 
-    - le titre, 
-    - les étiquettes des axes, 
-    - la couleur, 
-    - les autres paramètres qui vous sembleront pertinents. 
-
-### Solution : histogramme des données de départ
-
-```{r hist_log2_LFQ_altogether_pretty, fig.width=8, fig.height=5, out.width="100%", fig.cap="Histogram of log2(LFQ) values from Canale's whole proteomics dataset. "}
-## Create a vector with all the numeric values of the proteome quantification
-x <- na.omit(unlist(log2_LFQ))
-
-#### Generate a histogram with the log2(LFQ) values of all the samples together ####
-hist(x, 
-     main = "Distribution of proteome quantification values", ## Title of the figure
-     xlab = "log2(LFQ)", ## Label on the X axis
-     ylab = "Occurrences", ## Label on the Y axis
-     breaks=100, ## Increase the number of breaks to better evaluate the shape of the distribution
-     las = 1,   ## Display axis labels horizontally
-     col = "lightblue")
-grid() ## Add a discrete grid to mark the X and Y levels
-
-```
-
-
-### Votre interprétation
-
-Ajoutez ici vos commentaires concernant la forme générale de cet histogramme. *
-
-**Observations: **
-
-- The distribution is asymmetric, with a right-side skew (longer tail on the right than on the left)
-- The distribution is roughly unimodal (a single peak), but we see a "shoulder" between X values 27 and 30
-- Globally, the shape of the distribution does not look to follow a normal distribution or any other specific theoretical distribution
-- **This is not surprising**. Actually,  we don't expect *a priori* that this curve would follow a normal distribution, or any particular distribution, because it represents values for >8000 proteins, each of which is expected to have a specific level (concentration)related to its specific transcriptional and post-transcriptional regulation. 
-
-
-## Calcul des indicateurs globaux
-
-Le tableau en annexe 1 récapitule les principales statistiques utilisées pour caractériser les propriétés d'un jeu de données quantitatives. 
-
-### Exercice : calcul des indicateurs sur l'ensemble des données
-
-Calculez les paramètres suivants sur l'ensemble des données du tableau de quantification du protéome. Stockez les paramètres dans une liste nommée `proteome_parameters`, en associant les étiquettes suivantes aux paramètres. 
-
-- `mean`: moyenne
-- `var` :variance
-- `sd`: écart-type (standard deviation)
-- `Q1`: premier quartile
-- `min` : minimum
-- `median` : médiane
-- `Q3` : troisième quartile
-- `max` : maximum
-- `IQR`: Ecart interquartile
-
-**Astuces :**
-
-- pour vous faciliter la tâche, nous avons initié la liste de paramètres avec les 3 premières statistiques, à vous de la compléter
-- il n'existe pas de fonction R qui calcule directement les quartile ou les percentiles, mais la fonction `quantiles()` vous permet de les calculer facilement. 
-- la fonction `quantiles()` retourne une valeur avec une "étiquette" indiquant le paramètre de probabilité que vous avez fourni. Ce paramètre peut être utile dans certains cas, mais dans la structure de liste ci-dessous il est perturbant car il s'ajoute automatiquement au nom de l'élément de la liste. Pour obtenir un résultat propre, combinez les fonctions `quantile(à`et `unname()`de la façon suivante:  `unname(quantile(prob = ...))`. 
-
-Note: dans cette solution, nous avons calculé pour vous les paramètres de dyssimétrie ($g_1$) et d'aplatissement ($g_2$), qui ne faisaient pas partie de l'énoncé.
-
-```{r proteome_parameters}
-## Compute a vector with the non-NA values of the proteome quantification
-x <- na.omit(unlist(log2_LFQ))
-
-## Compute descriptive statistics with the all the numeric values of the proteome
-proteome_parameters <- list()
-
-proteome_parameters$mean <- mean(x)
-proteome_parameters$var <- var(x)
-proteome_parameters$sd <- sd(x)
-proteome_parameters$min <- min(x)
-proteome_parameters$P05 <- unname(quantile(x, 0.05)) ## Percentile 05. I add unname() to avoid automatic inclusion of the percents in the variable name
-proteome_parameters$Q1 <- unname(quantile(x, 0.25))
-proteome_parameters$median <- median(x)
-proteome_parameters$Q3 <- unname(quantile(x, 0.75))
-proteome_parameters$P95 <- unname(quantile(x, 0.95)) ## Percentile 95
-proteome_parameters$max <- max(x, 0.75)
-proteome_parameters$IQR <- IQR(x, 0.75)
-
-
-## Skewness : Fisher's g1 parameter
-proteome_parameters$g1 <- mean((x - proteome_parameters$mean)^3) / proteome_parameters$sd^3
-
-## Kurtosis : Fisher's g2 parameter
-## Note: the Normal distribution is characterized by g2=0
-proteome_parameters$g2 <- (mean((x - proteome_parameters$mean)^4) / proteome_parameters$sd^4) - 3
-
-## Print a nicely formatted table in the report generated by knit. 
-## For this we use the function kable() from the knit package
-kable(unlist(proteome_parameters), col.names = "values", caption = "Descriptive statistics computed on all the non-NA proteome values")
-
-```
-
-
-### Exercice : marquage des indicateurs sur l'histogramme des valeurs
-
-Nous avons retracé l'histogramme des valeurs de quantification, en utilisant les fonctions `ablines()` pour marquer la moyenne, et `arrows()` pour dessiner un intervalle couvrant 1 écart-type de chaque côté de la moyenne. Lisez l'aide des fonctions `abline` et `arrows` en faisant le lien entre les arguments utilisés et le résultat graphique. Ajouter ensuite les instructions pour dessiner également : 
-
-- une barre verticale marquant la médiane
-- deux barres verticales marquant le premier et le troisième quartile
-- une flèche marquant l'espace interquartile*
-
-```{r hist_with_parameters, fig.width=8, fig.height=5, out.width="80%", fig.cap="Histogramme des valeurs de protéome avec les paramètres de tendance centrale et de dispersion"}
-x <- na.omit(unlist(log2_LFQ))
-
-### Draw a histogram ###
-hist(x, breaks = 100, 
-     main = "Distribution of proteome quantification values", 
-     xlab="log2_LFQ", 
-     ylab="Frequency", 
-     col="lightblue",
-     border = "white",
-     las=1)
-
-## Mark the mean
-abline(v = proteome_parameters$mean, col = "blue", lwd = 3)
-
-## Mark a range extending over 1 standard deviation on each side of the mean
-arrows(x0 = proteome_parameters$mean - proteome_parameters$sd, ## Left limit of the arrow
-       x1 = proteome_parameters$mean + proteome_parameters$sd, ## Right limit of the arrow
-       y0 = 4000, ## Height of the arrow
-       y1 = 4000, ## Height of the arrow
-       lwd=3, ## Line width
-       code = 3,  ## Draw arrowheads on both sides of the arrow
-       length=0.1, ## Length of the arrowheads relative to the arrow
-       angle=30,   ## Angle of the arrowheads
-       col = "darkviolet"
-       )
-
-## Mark the median
-abline(v = proteome_parameters$median, 
-       col = "darkgreen", 
-       lwd = 5)
-
-## Mark the quartiles
-abline(v = proteome_parameters$Q1, col = "brown", lwd = 2)
-abline(v = proteome_parameters$Q3, col = "brown", lwd = 2)
-
-
-## Mark the interquartile range
-arrows(x0 = proteome_parameters$Q1, ## First quartile
-       x1 = proteome_parameters$Q3, ## Third quartile
-       y0 = 4500, ## Height of the arrow
-       y1 = 4500, ## Height of the arrow
-       lwd = 5, ## Line width
-       code = 3,  ## Draw arrowheads on both sides of the arrow
-       length = 0.1, ## Length of the arrowheads relative to the arrow
-       angle=30,   ## Angle of the arrowheads
-       col = "brown")
-
-## Add a legend on the graph
-legend("topright",  ## Position of the legend
-       legend = c("mean", 
-                  "mean ± sd",
-                  "IQR",
-                  "Q1",
-                  "median",
-                  "Q3"),  ## text of the legend
-       col = c("blue", 
-               "darkviolet",
-               "darkgreen",
-               "brown",
-               "brown",
-               "brown"
-               ), ## Colors of the legend elements
-       lwd=c(3, 3, 5, 2, 5, 2), 
-       bty="n") ## no border around the legend
-
-
-## Add a legent with the numeric values
-legend("topleft",
-       legend = c(
-         paste0("mean=", round(proteome_parameters$mean, 2)),
-         paste0("Q1=", round(proteome_parameters$Q1, 2)),
-         paste0("median=", round(proteome_parameters$median, 2)),
-         paste0("Q3=", round(proteome_parameters$Q3, 2)),
-         paste0("sd=", round(proteome_parameters$sd, 2)),
-         paste0("IQR=", round(proteome_parameters$IQR, 2)),
-         paste0("g1=", round(proteome_parameters$g1, 2)),
-         paste0("g2=", round(proteome_parameters$g2, 2))
-         ),
-       bty="n")
-
-```
-
-
-## Statistiques marginales : statistiques par ligne (protéine)
-
-### Exercice : calcul des statistiques par protéine
-
-Dans le bloc de code ci-dessous, nous avons utilisé la fonction `apply()` pour  calculer la moyenne de chaque protéine, et nous avons stocké le résultat dans un vecteur nommé `mean_per_protein`. Notez que nous avons ajouté l'option `na.rm = TRUE`, que la fonction `apply()` transmet à la fonction `mean()`. 
-
-- Dessinez un histogramme avec la distribution des moyennes par protéines
-
-
-```{r hist_mean_per_protein, fig.width=8, fig.height=5, out.width="80%", fig.cap="Distribution of the mean per protein. "}
-#### Compute marginal statistics per line (protein) ####
-
-## Mean per protein
-mean_per_protein <- apply(log2_LFQ, 1, mean, na.rm = TRUE)
-
-
-## Histogram of the means per protein
-
-hist(mean_per_protein, breaks=100, col="lightgreen", border="white",
-     main="Mean per protein",
-     xlab="mean(log2(LFQ))",
-     ylab="Number of proteins",
-     las=1)
-grid()
-
-```
-
-
-Dans le bloc de code ci-dessous, 
-
-- Calculez l'écart-type de chaque protéine et stockez le résultat dans un vecteur nommé `sd_per_protein` 
-- Dessinez un histogramme avec la distribution des écarts-types par protéines
-- Au moyen de la fonction R `plot()`, dessinez un nuage de points (scatter plot) avec en abcsisse la moyenne par protéine et en ordonnée l'écart-type par protéine
-
-
-```{r hist_sd_per_protein}
-## Standard deviation per protein
-sd_per_protein <- apply(log2_LFQ, 1, sd, na.rm = TRUE)
-
-## Histogram of the sd per protein
-hist(sd_per_protein, breaks=100, col="orange", border="white",
-     main="Standard deviation per protein",
-     xlab="sd(log2(LFQ))",
-     ylab="Number of proteins",
-     las=1)
-grid()
-
-
-```
-
-```{r hist_protein_mean_vs_sd, fig.width=7, fig.height=7, out.width="100%", fig.cap="Mean versus standard deviation per protein. "}
-
-
-## Compute density colors to highlight regions with many overlapping dots
-cols <- densCols(mean_per_protein, sd_per_protein)
-
-## Dot plot with the standard deviation as a function of the mean per protein
-plot(mean_per_protein, sd_per_protein,
-     main = "Mean vs SD per protein",
-     xlab="Mean log2(LFQ) per protein",
-     ylab="Standard deviation of  log2(LFQ) per protein",
-     col = cols, pch = 16, cex = 0.6,
-     panel.first=grid(lty="solid", col="grey"),
-     las = 1)
-
-```
-
-
-## Statistiques marginales : statistiques par colonne (échantillon)
-
-### Exercice : calcul des statistiques par colonne
-
-- utilisez la fonction `apply()` pour calculer la moyenne par colonne (échantillon), et stockez le résultat dans un vecteur nommé `mean_per_sample`
-- utilisez la fonction `barplot()` pour visualiser les moyennes
-
-```{r barplot_mean_per_sample, fig.height=4, fig.width=12, out.width="100%", fig.cap="Barplot of the mean per sample"}
-### Draw a barplot with the mean per sample (column) of the proteome table
-mean_per_sample <- apply(log2_LFQ, 2, mean, na.rm=TRUE)
-barplot(mean_per_sample,
-        main = "Mean per sample",
-        cex.names = 0.5,
-        col = sample_groups$color,
-        horiz = FALSE,
-        las = 2)
-
-```
-
-## Boîtes à moustaches (box plot) des valeurs par prélèvement
-
-### Exercice : boîtes à moustache
-
-Utilisez la fonction  R `boxplot()` pour visualiser ces données sous forme de boîtes à moustaches (*box plot*). Utilisez différentes options pour rendre cette figure aussi claire que possible. 
-
-**Astuces :**
-- il existe une option permettant d'afficher les boîtes à moustaches horizontalement, ce qui facilite la lecture des étiquettes associées à chaque échantillon
-- l'option `las=1` permet d'afficher horizontalement les étiquettes des deux axes, ce qui facilite leur lecture
-
-```{r box_plot, fig.width=8, fig.height=12, out.width="100%", fig.cap="Boxplot of Canale's data. "}
-
-# boxplot(log2_LFQ)
-
-## Define colors per sample according to the sample group
-#ifelse(test = sample_groups$group == "HCC", "violet", "#DDFFDD")
-group_colors <- c("HCC"="#FFDDDD", Liver="#DDFFDD")
-sample_groups$color <- group_colors[sample_groups$group]
-
-boxplot(log2_LFQ, 
-        horizontal = TRUE, 
-        las=1, 
-        cex.axis=0.6, 
-        col=sample_groups$color, 
-        main="Box plot of proteomics data", 
-        xlab="log2(LFQ)")
-legend("bottomright", legend = names(group_colors), fill = group_colors, cex = 0.8)
-
-```
-
-
-### Votre interprétation
-
-1. Dans ces boîtes à moustache, que représentent
-    - les rectangles colorés
-    - les barres épaisses au milieu de ces rectangles
-    - les lignes pointillées
-    - les cercles aux extrémités de ces lignes
-
-2. Commentez l'alignement général des boîtes à moustaches (position de la barre centrale)
-
-3. Observez la médiane et l'espace inter-quartile des échantillons. Identifiez-vous des échantillons atpiques ? Si oui, notez leurs identifiants, nous reviendrons dessus ultérieurement. 
-
-
-## Diagramme en violon (*violin plot*) des valeurs par prélèvement
-
-**Cette section est facultative.** Ne la faites que si vous avez suffisamment d'avance sur le TP, sinon passez à la section suivante. 
-
-Installez la librairie `vioplot` et chargez-la dans R. 
-
-```{r violin_plot, fig.width=8, fig.height=12, out.width="100%", fig.cap="Violin plot of Canale's data. "}
-#### Draw a violin plot ####
-
-## Install vioplot library if required, and load it
-if (!require(vioplot)) {
-  install.packages("vioplot")
-}
-library(vioplot)
-
-## Install vioplot library if required, and load it
-vioplot(log2_LFQ,
-        horizontal = TRUE,
-        names = rep("", ncol(log2_LFQ)),  # supprime labels auto
-        las = 1,
-        cex.axis = 0.7,
-        col = sample_groups$color,
-        main = "Violin plot of proteomics data",
-        xlab = "log2(LFQ)")
-
-# Ajout manuel des labels sur l'axe Y
-axis(2, at = 1:ncol(log2_LFQ), labels = colnames(log2_LFQ), las = 2, cex.axis = 0.7)
-legend("bottomright", legend = names(group_colors), fill = group_colors, cex = 0.9)
-
-```
-
-
-
-## Carte de couleurs (heatmap) des données de départ
-
-Ci-dessous, nous avons utilisé la fonction `heatmap()` pour dessiner une carte de couleur du tableau `log2_LFQ`. 
-
-- Veillez à désactiver le clustering des lignes et des colonnes (options `Rowv`et `Colv)
-- désactivez également la standardization (option `scale`)
-
-
-```{r heatmap_log2LFQ, fig.width=12, fig.height=12, out.width="100%", fig.cap="**Heatmap of the proteome abundance.**  Rows: proteins;  Columns: samples. The color scale is proportional to  log2(LFQ) values. Note that the data table contains 8192 proteins, whereas the figure is 2304w2304 pixels. Rows of the heatmap thus represent a subset of the proteins. "}
-heatmap(as.matrix(log2_LFQ), 
-        main="Canale (2023), log2(LFQ)",
-        Rowv = NA, 
-        Colv=NA, 
-        scale="none", 
-        labRow=NA,
-        cexCol = 0.7, 
-        xlab = "samples", 
-        ylab = "Proteins log2(LFQ)")
-```
-
-
-### Exercice : votre interprétation de la carte des couleurs
-
-1. Distinguez vous des particularités au niveau de certaines colonnes ? Si oui, comment les interprétez-vous ?
-
-2. Distinguez vous des particularités au niveau de certaines lignes ? Si oui, comment les interprétez-vous ?
-
-
-
-## Protein filtering
-
-The histogram below indicates the number of NA values per protein. 
-
-
-```{r na_per_protein, fig.width=8, fig.height=5, out.width="90%", fig.cap="Number of NA values per protein. The color scale highlighhts the caution to be taken for proteins with high number of NA values. "}
-#### Treat the number  of NA values per sample ####
-
-## Count the number of NA values per protein (row)
-na_per_protein <- apply(is.na(log2_LFQ), 1, sum)
-# range(na_per_protein)
-
-## Generate a color palette from pink to green
-col_fun <- colorRampPalette(c("lightgreen", "red"))
-n_breaks <- ncol(log2_LFQ) + 1  # nb d’intervalles = nb breaks + 1
-
-## Draw a histogram with the number of NA values per sample
-hist(na_per_protein, 
-     breaks = -0.5:(ncol(log2_LFQ)+0.5),
-     las = 1,
-     main = "Number of NA values per protein",
-     xlab = "Number of NA values",
-     ylab = "Number of proteins",
-     col = col_fun(n_breaks),
-     border = "white")
-
-```
-
-**Observations: **
-
-- The histogram spreads over all values from `r min(na_per_protein)` to `r max(na_per_protein)` NA values per protein.
-- `r na_per_protein[ncol(log2_LFQ)]` proteins have NA values in all the samples (columns)
-- The number of proteins with measurements in all the colums is a minority : only `r na_per_protein[0]` proteins have not a single NA value
-
-
-We suppress the rows (proteins) containing too many NA values. 
-
-
-```{r protein_filtering}
-#### 
-## Create a clean data.frame by suppressing the lines (proteins) containing only NA values
-min_values_per_prot <- 5
-log2_LFQ_clean <- log2_LFQ[na_per_protein >= min_values_per_prot, ]
-#nrow(log2_LFQ_clean)
-
-```
-
-For this, we arbitrarily set a threshold with the minimal number of values per protein: we suppress all the proteins (rows) having less than  `r min_values_per_prot` NA values. Among the `r nrow(log2_LFQ)` proteins of the initial table, the filtered keeps  `r nrow(log2_LFQ_clean)`. 
-
-
-
-### Principal components
-
-```{r eval=FALSE}
-
-if (!requireNamespace("BiocManager", quietly = TRUE)) {
-  install.packages("BiocManager") 
-}
-BiocManager::install("pcaMethods")
-
-library(pcaMethods)
-
-
-
-## Compute principal components from samples (columns by transposing the data table)
-pca_samples <- pca(t(log2_LFQ_clean), method = "nipals", nPcs = 5, scale = "uv")
-
-## Compute PC scores for each protein
-scores <- scores(res_pca)
-dim(scores)
-plot(scores[,1], scores[,2],
-     xlab = "PC1", ylab = "PC2",
-     main = "ACP avec NIPALS (valeurs manquantes gérées)",
-     pch = 19)
-
-
-## Compute principal components from proteins (rows)
-res_pca <- pca(log2_LFQ_clean, method = "nipals", nPcs = 5, scale = "uv")
-
-## Compute PC scores for each protein
-scores <- scores(res_pca)
-dim(scores)
-plot(scores[,1], scores[,2],
-     xlab = "PC1", ylab = "PC2",
-     main = "ACP avec NIPALS (valeurs manquantes gérées)",
-     pch = 19)
-```
-
-
-
-## Standardizing the data table
-
-
-## Standardization
-
-### Dataset-wise standardization
-
-```{r standardisation}
-
-```
-
-
-### Protein-wise standardization
 
 ```{r protein_standardization}
 #### Protein-wise standardization ####
@@ -737,26 +240,98 @@ heatmap(as.matrix(protein_stand), Rowv = NA, Colv=NA,
 
 ```
 
-## Appendices
 
-### Appendix 1: descriptive statistics : sample parameters
 
-**Note :** les formules ci-dessous sont celles définies pour calculer des paramètres d'échantillons. Ces paramètres visent uniquement à décrire les données disponible.  
 
-Des formules légèrement différentes sont utilisées pour estimer les paramètres d'une population à partir d'un échantillon, comme nous le verrons dans le chapitre **"Echantillonnage et estimation"**. 
+## Contrôle de qualité et filtrage
 
-| Statistique |  Description | Formule |
-|-----------------------|---------------------------|------------------------------------|
-| Moment  | Moment d'ordre $k$ par rapport à une constante $c$  | $\frac{1}{n} \sum_{i=1}^{n} (x_i - c)^k$ |
-| Moment  | Moment d'ordre $k$ par rapport à l'origine  | $a_k = \frac{1}{n} \sum_{i=1}^{n} x_i^k$ |
-| Moyenne d'échantillon (sample mean) | Tendance centrale | $\bar{x} = a_1 = \frac{1}{n} \sum_{i=1}^{n} x_i$ |
-| Moment centré | Moment d'ordre $k$ par rapport à la moyenne  | $m_k = \frac{1}{n} \sum_{i=1}^{n} (x_i - \bar{x})^k$ |
-| Variance d'échantillon (sample variance) | Dispersion | $s^2 = m_2 = \frac{1}{n} \sum_{i=1}^{n} (x_i - \bar{x})^2$ |
-| Ecart-type d'échantillon (sample standard deviation) | Dispersion | $s = \sqrt{s^2} = \sqrt{ \frac{1}{n} \sum_{i=1}^{n} (x_i - \bar{x})^2 }$ |
-| Skewness | Dissymétrie | $g_1 = m_3 / s^3 = \frac{ \frac{1}{n} \sum_{i=1}^{n} (x_i - \bar{x})^3 }{ \left( \sqrt{ \frac{1}{n} \sum_{i=1}^{n} (x_i - \bar{x})^2 } \right)^3 }$ |
-| Kurtosis = peakedness | Coefficient d'acuité (d'aplatissement, de voussure) | $g_2 = m_4 / s^4 - 3 = \frac{ \frac{1}{n} \sum_{i=1}^{n} (x_i - \bar{x})^4 }{ \left( \frac{1}{n} \sum_{i=1}^{n} (x_i - \bar{x})^2 \right)^2 }$ |
-| Quantile | Valeur minimale qui "plafonne" (supérieure ou égale à) une certaine proportion $p$ des $n$ observations | $Q(p) = x_{(\lceil n p \rceil)}, p \in [0,1]$ |
-| Premier quartile |   | $Q_1 = Q(0.25)$ |
-| Médiane (médiane) | Tendance centrale (robuste aux valeurs aberrantes) | $\tilde{x} = Q_2 = Q(0.5)$ |
-| Troisième quartile |   | $Q_3 = Q(0.75)$ |
-| Ecart interquartile | Dispersion (robuste aux valeurs aberrantes) | $\text{IQR} = Q_3 - Q_1$ |
+L'histogramme ci-dessous indique le nombre
+
+```{r na_per_protein, fig.width=8, fig.height=5, out.width="90%", fig.cap="Number of NA values per protein. The color scale highlighhts the caution to be taken for proteins with high number of NA values. "}
+#### Treat the number  of NA values per sample ####
+
+## Count the number of NA values per protein (row)
+na_per_protein <- apply(is.na(log2_LFQ), 1, sum)
+# range(na_per_protein)
+
+## Generate a color palette from pink to green
+col_fun <- colorRampPalette(c("lightgreen", "red"))
+n_breaks <- ncol(log2_LFQ) + 1  # nb d’intervalles = nb breaks + 1
+
+## Draw a histogram with the number of NA values per sample
+hist(na_per_protein, 
+     breaks = -0.5:(ncol(log2_LFQ)+0.5),
+     las = 1,
+     main = "Number of NA values per protein",
+     xlab = "Number of NA values",
+     ylab = "Number of proteins",
+     col = col_fun(n_breaks),
+     border = "white")
+
+```
+
+**Observations: **
+
+- The histogram spreads over all values from `r min(na_per_protein)` to `r max(na_per_protein)` NA values per protein.
+- `r na_per_protein[ncol(log2_LFQ)]` proteins have NA values in all the samples (columns)
+- The number of proteins with measurements in all the colums is a minority : only `r na_per_protein[0]` proteins have not a single NA value
+
+
+We suppress the rows (proteins) containing too many NA values. 
+
+
+```{r protein_filtering}
+#### 
+## Create a clean data.frame by suppressing the lines (proteins) containing only NA values
+min_values_per_prot <- 5
+log2_LFQ_clean <- log2_LFQ[na_per_protein >= min_values_per_prot, ]
+#nrow(log2_LFQ_clean)
+
+```
+
+For this, we arbitrarily set a threshold with the minimal number of values per protein: we suppress all the proteins (rows) having less than  `r min_values_per_prot` NA values. Among the `r nrow(log2_LFQ)` proteins of the initial table, the filtered keeps  `r nrow(log2_LFQ_clean)`. 
+
+
+
+
+<!--
+
+### Principal components
+
+```{r eval=FALSE}
+
+if (!requireNamespace("BiocManager", quietly = TRUE)) {
+  install.packages("BiocManager") 
+}
+BiocManager::install("pcaMethods")
+
+library(pcaMethods)
+
+
+
+## Compute principal components from samples (columns by transposing the data table)
+pca_samples <- pca(t(log2_LFQ_clean), method = "nipals", nPcs = 5, scale = "uv")
+
+## Compute PC scores for each protein
+scores <- scores(res_pca)
+dim(scores)
+plot(scores[,1], scores[,2],
+     xlab = "PC1", ylab = "PC2",
+     main = "ACP avec NIPALS (valeurs manquantes gérées)",
+     pch = 19)
+
+
+## Compute principal components from proteins (rows)
+res_pca <- pca(log2_LFQ_clean, method = "nipals", nPcs = 5, scale = "uv")
+
+## Compute PC scores for each protein
+scores <- scores(res_pca)
+dim(scores)
+plot(scores[,1], scores[,2],
+     xlab = "PC1", ylab = "PC2",
+     main = "ACP avec NIPALS (valeurs manquantes gérées)",
+     pch = 19)
+```
+
+
+-->
