@@ -93,7 +93,8 @@ options(scipen = 12) ## Max number of digits for non-scientific notation
 ```
 
 
-## Abbreviations
+## Abréviations
+
 
 | Abbreviation | Meaning |
 |--------------|----------------------------------------|
@@ -104,10 +105,8 @@ options(scipen = 12) ## Max number of digits for non-scientific notation
 | Q2 | Second quartile = median |
 | Q3 | Third quartile |
 
-## Study case
 
-
-## Reloading the data from the previous step
+## Rechargement des données du TP précédent
 
 
 ```{r data_reload}
