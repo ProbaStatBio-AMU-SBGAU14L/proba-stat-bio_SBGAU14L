@@ -1,0 +1,383 @@
+---
+title: "Tuto et TP : analyse différentielle des données protéomiques"
+subtitle: "Proba/stat pour la biologie (SBGAU14L)"
+author: "Jacques van Helden (ORCID [0000-0002-8799-8584](https://orcid.org/0000-0002-8799-8584))"
+date: '`r Sys.Date()`'
+output:
+  html_document:
+    code_folding: hide
+    fig_caption: yes
+    highlight: zenburn
+    theme: cerulean
+    toc: yes
+    toc_depth: 3
+    toc_float: yes
+  word_document:
+    toc: yes
+    toc_depth: 3
+  ioslides_presentation:
+    colortheme: dolphin
+    fig_caption: yes
+    fig_height: 6
+    fig_width: 7
+    fonttheme: structurebold
+    highlight: tango
+    incremental: no
+    keep_md: no
+    smaller: yes
+    theme: cerulean
+    toc: yes
+    widescreen: yes
+  beamer_presentation:
+    colortheme: dolphin
+    fig_caption: yes
+    fig_height: 6
+    fig_width: 7
+    fonttheme: structurebold
+    highlight: tango
+    incremental: no
+    keep_tex: no
+    slide_level: 2
+    theme: Montpellier
+    toc: yes
+  slidy_presentation:
+    fig_caption: yes
+    fig_height: 6
+    fig_width: 7
+    highlight: tango
+    incremental: no
+    keep_md: no
+    smaller: yes
+    theme: cerulean
+    toc: yes
+    toc_float: yes
+    widescreen: yes
+  pdf_document:
+    fig_caption: yes
+    highlight: zenburn
+    toc: yes
+    toc_depth: 3
+---
+
+```{r settings, include=FALSE, echo=FALSE, eval=TRUE}
+library(knitr)
+
+options(width = 300)
+# options(encoding = 'UTF-8')
+knitr::opts_chunk$set(
+  fig.width = 7, fig.height = 5, 
+  fig.path = 'figures/canale23_',
+  fig.align = "center", 
+  size = "tiny", 
+  echo = TRUE, 
+  eval = TRUE, 
+  warning = FALSE, 
+  message = FALSE, 
+  results = TRUE, 
+  comment = "")
+
+options(scipen = 12) ## Max number of digits for non-scientific notation
+# knitr::asis_output("\\footnotesize")
+
+```
+
+
+
+
+## But de ce TP
+
+Le but de ce TP est de mettre en oeuvre un test $t$ de Student pour comparer les moyennes des niveaux d'abondance du protéome, entre deux types de prélèvements : 
+
+- tissu hépatique tumoral (*HCC* hépatocarinome cellulaire )
+- tissu hépatique adjacent non tumoral (*liver*)
+
+### Approche exploratoire des paramètres pour l'ensemble des protéines
+
+Avant de présenter la théorie ou de procéder au test statistique à proprement parler, nous allons effectuer quelques analyses empiriques sur l'ensemble de nos données de protéome, pour acquérir une intuition de leur structuration : 
+
+- moyennes d'échantillons de chaque protéine pour les deux tissus respectifs
+- variances et écart-types d'échantillons pour chaque protéines
+- relation entre moyennes et variances
+
+### Analyse d'une protéine d'intérêt
+
+```{r protein_of_interest}
+
+goi <- "UGP2" ## Gene of interest
+poi <- "Q16851" ## Protein of interest
+```
+
+Avant de mettre en oeuvre l'analyse différentielle sur l'ensemble des données protéomiques, nous nous intéressons à une protéine particulière (identifiant **`r poi`**, produit du gène **`r goi`**). 
+
+### Analyse différentielle sur l'ensemble des protéines
+
+Nous généraliserons ensuite l'analyse en réalisant un test d'égalité des moyennes pour chacune des protéines du jeu de données filtré. 
+
+## Abréviations
+
+
+| Abbreviation | Meaning |
+|--------------|----------------------------------------|
+| LFQ | Label-Free Quantification |
+| log2 | base-2 logarithm |
+| IQR | inter-quartile range |
+| Q1 | First quartile |
+| Q2 | Second quartile = median |
+| Q3 | Third quartile |
+
+
+## Rechargement des données du TP précédent
+
+
+```{r data_reload}
+#### Load data from the previous step ####
+
+RData_previous <- "01_data-loading.RData"
+
+## Define local directory
+working_dir <- "~/proba_stat_bio_TP/canale_2023"
+RData_dir <- file.path(working_dir, 'RData')
+dir.create(RData_dir, recursive = TRUE, showWarnings = FALSE)
+
+## Define remote and local file paths
+repo_base <- "https://raw.githubusercontent.com/ProbaStatBio-AMU-SBGAU14L/proba-stat-bio_SBGAU14L/main/RData"
+
+RData_url <- paste0(repo_base, "/", RData_previous)
+RData_previous <- file.path(RData_dir, RData_previous)
+
+## Download only if the local file is missing
+if (!file.exists(RData_previous)) {
+  download.file(RData_url, RData_previous, mode = "wb")
+}
+
+## Load R objects into memory
+load(RData_previous)
+```
+
+
+****************************************************************
+## Moyennes d'échantillons par type de tissu
+
+Lors du TP précédent, nous avons mesuré les statistiques marginales (moyenne, écart-type) pour chaque protéine, tous échantillons confondus. 
+Nous allons maintenant calculer les mêmes statistiques en séparant les échantillons par type tissulaire : 
+
+- *liver*: foie
+- *HCC*: hépatocarcinome cellulaire
+
+Pour cela nous allons utiliser la table de métadonnées `sample_groups`.
+
+**Exercice : ** 
+- Utilisez pour cela la fonction `subset()` pour sélectionner les noms d'échantillons correspondant aux deux types cellulaires. 
+- A partir de la data.frame `log2_LFQ` qui contient les données protéomiques de tous les échantillons, créez deux data.frames nommées respectivement `log2_LFQ_liver` et  `logLFQHCC` avec le sous-ensemble de colonnes des tissus correspondants. 
+- Calculez les moyennes marginales respectives des échantillons de foie et de cellules hépatocarcinome cellulaire, et stockez-les dans des vecteurs nommés respectivement `mean_per_protein_liver` et  `mean_per_protein_HCC`. 
+- Dessinez un nuage de points (scatter plot) représentant la moyenne marginale des échantillons HCC (ordonnée) en fonction de la moyenne marginale des échantillons de foie (abscisse). Ajoutez une ligne (`abline()`) qui marque la médiane de ce graphique. 
+
+
+**Astuces : **
+
+- Pour vous faciliter la tâche, nous fournissons les étapes de sélection pour l'un des types tissulaires, nous vous laissons ajouter les commandes pour traiter le deuxième. 
+- Utilisez la fonction R `densCols()` pour indiquer les régions où se superposent un grand nombre de points
+
+
+```{r plot_mean_per_group, fig.width=8, fig.height=8, out.width="90%", fig.cap="Sample means per tissue type. HCC: Hepatocarcinome cells. "}
+## Select the sample labels for the two tissue types
+liver_samples <- rownames(subset(sample_groups, group=="Liver"))
+HCC_samples <- rownames(subset(sample_groups, group=="HCC"))
+
+## Compute the sample size per group
+n_liver <- length(liver_samples)
+n_HCC <- length(HCC_samples)
+
+## Extract two subsets of the proteome abundance table, corresponding to the two tissue table
+log2_LFQ_liver <- log2_LFQ[, liver_samples]
+log2_LFQ_HCC <- log2_LFQ[, HCC_samples]
+# dim(log2_LFQ_liver)
+# dim(log2_LFQ_HCC)
+
+## Compute marginal means per protein for each tissue type
+mean_per_protein_liver <- apply(log2_LFQ_liver, 1, mean, na.rm = TRUE)
+mean_per_protein_HCC <- apply(log2_LFQ_HCC, 1, mean, na.rm = TRUE)
+
+mean_min = floor(min(mean_per_protein_liver, mean_per_protein_HCC, na.rm = TRUE))
+mean_max = ceiling(max(mean_per_protein_liver, mean_per_protein_HCC, na.rm = TRUE))
+
+## Scatter plot of the means per group
+plot(mean_per_protein_liver, 
+     mean_per_protein_HCC, 
+     col=densCols(
+       x = mean_per_protein_liver, 
+       y = mean_per_protein_HCC),
+     main = "Mean abundance per protein: Liver versus HCC",
+     xlab = "mean(log2_LFQ), liver", 
+     ylab = "mean(log2_LFQ), HCC", 
+     xlib=c(mean_min, mean_min),
+     ylib=c(mean_min, mean_min),
+     las=1)
+grid() ## Add a grid
+abline(a = 0, b = 1, col = "brown", lwd=2)
+
+```
+
+****************************************************************
+## Variances par tissu
+
+
+**Exercice : ** suivez la même procédure pour produire un graphique représentant les variances marginales par protéine, pour les tissus HCC et Liver. 
+
+```{r plot_var_per_group, fig.width=8, fig.height=8, out.width="90%", fig.cap="Standard deviation per tissue type. HCC: Hepatocarcinome cells. "}
+
+## Compute marginal variances per protein for each tissue type
+var_per_protein_liver <- apply(log2_LFQ_liver, 1, var, na.rm=TRUE) * sqrt((n_liver -1 ) /n_liver)
+var_per_protein_HCC <- apply(log2_LFQ_HCC, 1, var, na.rm=TRUE) * sqrt((n_HCC -1 ) /n_HCC)
+
+var_max <- ceiling(max(var_per_protein_liver, var_per_protein_HCC, na.rm = TRUE))
+
+## Scatter plot of the variances per group
+plot(var_per_protein_liver, 
+     var_per_protein_HCC, 
+     main = "Standard deviation of the abundance per protein: Liver versus HCC",
+     xlab = "var(log2_LFQ), liver", 
+     ylab = "var(log2_LFQ), HCC", 
+     xlim = c(0, var_max),
+     ylim=c(0, var_max),
+     col=densCols(
+       x = var_per_protein_liver, 
+       y = var_per_protein_HCC),
+     las=1)
+grid() ## Add a grid
+abline(a = 0, b = 1, col = "brown", lwd=2)
+
+```
+
+****************************************************************
+## Ecarts-types par tissu
+
+
+**Exercice : ** suivez la même procédure pour produire un graphique représentant les écarts-types marginaux par protéine, pour les tissus HCC et Liver. 
+
+```{r plot_sd_per_group, fig.width=8, fig.height=8, out.width="90%", fig.cap="Standard deviation per tissue type. HCC: Hepatocarcinome cells. "}
+
+## Compute marginal standard deviations per protein for each tissue type
+sd_per_protein_liver <- apply(log2_LFQ_liver, 1, sd, na.rm=TRUE) * sqrt((n_liver -1 ) /n_liver)
+sd_per_protein_HCC <- apply(log2_LFQ_HCC, 1, sd, na.rm=TRUE) * sqrt((n_HCC -1 ) /n_HCC)
+
+sd_max <- ceiling(max(sd_per_protein_liver, sd_per_protein_HCC, na.rm = TRUE))
+
+## Scatter plot of the standard deviations per group
+plot(sd_per_protein_liver, 
+     sd_per_protein_HCC, 
+     main = "Standard deviation of the abundance per protein: Liver versus HCC",
+     xlab = "sd(log2_LFQ), liver", 
+     ylab = "sd(log2_LFQ), HCC", 
+     xlim = c(0, sd_max),
+     ylim=c(0, sd_max),
+     col=densCols(
+       x = sd_per_protein_liver, 
+       y = sd_per_protein_HCC),
+     las=1)
+grid() ## Add a grid
+abline(a = 0, b = 1, col = "brown", lwd=2)
+
+```
+
+
+
+****************************************************************
+## Moyenne versus écart-type
+
+**Exercice : ** pour chaque type de tissu, dessinez un graphique de type nuage de points, avec en abscisse la moyenne et en ordonnée l'écart-type 
+
+```{r mean_vs_sd_liver, fig.width=8, fig.height=8, out.width="90%", fig.cap="Mean versus standard deviation in liver samples. "}
+
+## Scatter plot of the mean versus standard deviation
+plot(mean_per_protein_liver, 
+     sd_per_protein_liver, 
+     main = "Standard deviation versus mean of the abundance per protein in liver tissue",
+     xlab = "mean(log2_LFQ), liver", 
+     ylab = "sd(log2_LFQ), mean", 
+     xlim = c(mean_min, mean_max),
+     ylim=c(0, sd_max),
+     col=densCols(
+       x = sd_per_protein_liver, 
+       y = sd_per_protein_HCC),
+     las=1)
+grid() ## Add a grid
+abline(a = 0, b = 1, col = "brown", lwd=2)
+
+```
+
+
+```{r mean_vs_sd_HCC, fig.width=8, fig.height=8, out.width="90%", fig.cap="Mean versus standard deviation in HCC samples. "}
+
+## Scatter plot of the mean versus standard deviation
+plot(mean_per_protein_HCC, 
+     sd_per_protein_HCC, 
+     main = "Standard deviation versus mean of the abundance per protein in HCC tissue",
+     xlab = "mean(log2_LFQ), HCC", 
+     ylab = "sd(log2_LFQ), mean", 
+     xlim = c(mean_min, mean_max),
+     ylim=c(0, sd_max),
+     col=densCols(
+       x = sd_per_protein_HCC, 
+       y = sd_per_protein_HCC),
+     las=1)
+grid() ## Add a grid
+abline(a = 0, b = 1, col = "brown", lwd=2)
+
+```
+
+
+
+****************************************************************
+## Réalisation d'un test de Welch
+
+
+
+```{r welch_one_protein}
+
+## Select the observations for the protein of interest
+
+HCC_samples <- rownames(subset(sample_groups, group == "HCC"))
+liver_samples <- rownames(subset(sample_groups, group == "Liver"))
+
+HCC_values <-log2_LFQ[poi, HCC_samples]
+liver_values <-log2_LFQ[poi, liver_samples]
+
+welch_results <- t.test(
+  x = liver_values, y = HCC_values, 
+  alternative = "two.sided", 
+  var.equal = FALSE)
+print(welch_results)
+
+```
+
+
+**Interprétation**
+
+****************************************************************
+## Analyse différentielle du protéome
+
+
+
+****************************************************************
+## Formules mathématiques
+
+- Les syboles grecs ($\mu$, $\sigma$) correspondent aux statistiques de population, les symboles romains ($\bar{x}$, $s$) aux statistiques d'échantillon.
+- L'accent circonflexe ($\hat{ }$) indique les estimateurs de paramètres de population calculés à partir de paramètres d'échantillons. 
+
+| Symboles et formules       | Description   |
+|--------------|----------------------------------------------------|
+| $\mu_{1},  \mu_{2}$ | Moyennes respectives des populations 1 et 2. |
+| $\sigma_{1}, \sigma_{2}$ | Ecarts-types respectifs des populations 1 and 2. |
+| $N_1$, $N_2$ | Tailles (nombre d'individus) des populations 1 et 2. |
+| $n_1$, $n_2$ | Effectifs (nombre d'individus) des échantillons prélevés sur les populations 1 et 2. |
+| $\bar{x}_{1}, \bar{x}_{2}$ | Moyennes d'échantillons. |
+| $\delta = \mu_{2} - \mu{1}$ | Différence entre les moyennes des populations. |
+| $d = \hat{\delta} = \hat{\mu}_2 - \hat{\mu}_1  = \bar{x}_2 - \bar{x}_1$ | $d$ = **Taille d'effet**: dans un test de comparaison de moyennes, il s'agit de la différence entre les moyennes d'échantillons, utilisée comme estimateur de $\delta$. |
+| $s^2_{1}, s^2_{2}$ | Variances mesurées sur les échantillons. |
+| $\hat{\sigma}_p = \sqrt{\frac{n_1 s_1^2 + n_2 s_2^2}{n_1+n_2-2}}$ | Ecart-type groupé (*pooled standard deviation*), utilisé comme estimateur de l'écart-type commun des deux populations, en supposant leurs variances égales (hypothèse de travail d'homoscédasticité). |
+| $\hat{\sigma}_\delta = \hat{\sigma}_p \sqrt{\left(\frac{1}{n_1}+ \frac{1}{n_2}\right)}$  | Erreur standard sur la différence entre moyennes, en supposant que les populations ont la même variance (test de Student). |
+| $t_{S} = \frac{\hat{\delta}}{\hat{\sigma}_\delta} =  \frac{\bar{x}_{2} - \bar{x}_{1}}{\sqrt{\frac{n_1 s_{1}^2 + n_2 s_{2}^2}{n_1+n_2-2} \left(\frac{1}{n_1}+ \frac{1}{n_2}\right)}}$ | statistique $t$ de Student |
+| $t_{W}=\frac{\bar{x}_{1} - \bar{x}_{2}}{\sqrt{\frac {s^2_{1}}{n_1} + \frac{s^2_{2}}{n_2}}}$ | statistique $t$ de Welch |
+| | |
+
