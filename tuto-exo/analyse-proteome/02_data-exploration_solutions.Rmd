@@ -584,17 +584,24 @@ legend("bottomright", legend = names(group_colors), fill = group_colors, cex = 0
 ```
 
 
-### Votre interprétation
+### Exercice : votre interprétation des boîtes à moustache
 
 1. Dans ces boîtes à moustache, que représentent
     - les rectangles colorés
     - les barres épaisses au milieu de ces rectangles
     - les lignes pointillées
     - les cercles aux extrémités de ces lignes
+    
+
+    - **VOTRE REPONSE**
 
 2. Commentez l'alignement général des boîtes à moustaches (position de la barre centrale)
 
+    - **VOTRE REPONSE**
+
 3. Observez la médiane et l'espace inter-quartile des échantillons. Identifiez-vous des échantillons atpiques ? Si oui, notez leurs identifiants, nous reviendrons dessus ultérieurement. 
+
+    - **VOTRE REPONSE**
 
 <!--
 
@@ -657,9 +664,138 @@ heatmap(as.matrix(log2_LFQ),
 
 1. Distinguez vous des particularités au niveau de certaines colonnes ? Si oui, comment les interprétez-vous ?
 
+    - **VOTRE REPONSE**
+
 2. Distinguez vous des particularités au niveau de certaines lignes ? Si oui, comment les interprétez-vous ?
 
+    - **VOTRE REPONSE**
 
+
+
+## Standardisation par ligne (par protéine)
+
+Nous procédons à une standardisation par ligne afin d'obtenir, pour chaque protéine, des valeurs dont la moyenne est ramenée à 0 et l'écart-type à 1. Nous procédons en deux étapes :
+
+Centrage, en ramenant la moyenne de chaque ligne à 0 : $x'_{i,j} = x_{i,j} - \bar{x}_i$
+
+Mise à l'échelle, en ramenant à 1 l'écart-type des valeurs centrées : $z_{i,j} = \frac{x_{i,j} - \bar{x}_i}{s_i}$
+
+
+**Note :** la standardisation par ligne sert ici à produire une carte des couleurs (heatmap) complémentaire à celle obtenue précédemment avec les valeurs d'abondance $log2(LFQ)$ de départ, mais pour l'analyse différentielle nous utiliserons les données non-standardisées. 
+
+
+```{r protein_standardization, results=FALSE, echo=FALSE}
+#### Protein-wise standardization ####
+
+## Protein means
+mean_per_protein = apply(log2_LFQ, 1, mean, na.rm=TRUE)
+
+## Protein means
+sd_per_protein = apply(log2_LFQ, 1, sd, na.rm=TRUE)
+
+## Center proteins
+protein_centred = sweep(log2_LFQ, MARGIN = 1, STATS = mean_per_protein, FUN = "-", check.margin = TRUE)
+
+
+## Compute protein-wise standrardized abundances (centred and scaled)
+protein_stand = sweep(protein_centred, MARGIN = 1, STATS = sd_per_protein, FUN = "/", check.margin  = TRUE)
+
+## Check the ranges before and after centering and standardization
+range(log2_LFQ, na.rm = TRUE) # Range of all abundances before standardization
+range(protein_centred, na.rm = TRUE) # Range of all abundances after centering
+range(apply(protein_centred, 1, mean, na.rm = TRUE), na.rm=TRUE) # Range of the means per protein after centering
+range(protein_stand, na.rm = TRUE) # Range of all abundances after standardization
+range(apply(protein_stand, 1, mean, na.rm = TRUE), na.rm=TRUE) # Range of the means per protein after centering
+range(apply(protein_stand, 1, sd, na.rm = TRUE), na.rm=TRUE) # Range of the standard deviation per protein after centering
+```
+
+Les trois histogrammes ci-dessous représentent la distribution globale de toutes les valeurs des données avant et après standardisation. 
+
+- haut : avec les valeurs log2(LFQ) non transformées (bleu pâle),
+- milieu : après centrage (mauve pâle)
+- bas÷ après standardisation (vert pâle)
+
+
+```{r hist_standardized_abundances, fig.width=7, fig.height=10, out.width="70%", fig.cap="**Protein abundance values before and after protein-wise standardization**"}
+
+par(mfrow=c(3,1))
+
+hist(unlist(log2_LFQ), breaks=100, main="Before protein-wise standardization", 
+     col = "lightblue",
+     xlab="log2(LFQ)", ylab = "Number of proteins")
+abline(v=mean(unlist(log2_LFQ), na.rm=TRUE), lwd=2, col="#0000FF")
+
+hist(unlist(protein_centred), breaks=100, main="After protein-wise centering",
+     col = "#DDBBFF",
+     xlab="log2(LFQ) - protein-wise mean(log2(LFQ)", ylab = "Number of proteins")
+abline(v=0, lwd=2, col="#0000FF")
+
+hist(unlist(protein_stand), breaks=100, main="After protein-wise standardization",
+     col = "#BBFFDD",
+     xlab="z-score of log2(LFQ)", ylab = "Number of proteins")
+abline(v=0, lwd=2, col="#0000FF")
+
+par(mfrow=c(1,1))
+
+```
+
+### Exercice: données standardisées par ligne
+
+Comparez les histogrammes aux trois stade de la standardisation par ligne (avant, centrées, standardisées). 
+
+Quel est l'effet de cette standardisation sur la forme de l'histogramme ?
+
+    - **VOTRE REPONSE**
+
+La forme après  centralisation se rapproche-t-elle plus d'une distribution normale ?
+
+    - **VOTRE REPONSE**
+
+Si oui, pour quelle raison ?
+
+    - **VOTRE REPONSE**
+
+## Carte des couleurs des donnés standardisées
+
+La figure suivante montre la carte des couleurs (heatmap) des données standardisées par ligne : les valeurs d’abondance de chaque ligne (protéine) sont ramenées à une moyenne de 0 et à un écart-type de 1. 
+
+
+```{r heatmap_log2LFQ_std, fig.width=12, fig.height=12, out.width="100%", fig.cap="**Heatmap of the  protein-wise standardized abundances**  Rows: proteins;  Columns: samples. The color scale reflects the protein-wise standardized  log2(LFQ) values (z-scores, i.e. centred to 0 and scaled to 1). Note that the data table contains 8192 proteins, whereas the figure is 2304w2304 pixels. Rows of the heatmap thus represent a subset of the proteins. "}
+
+## Choose a palette to distinguish negative from positive values
+my_colors <- colorRampPalette(c("green", "white", "red"))(100)
+zlim <- quantile(abs(protein_stand), na.rm = TRUE, probs = 0.95)
+breaks <- seq(-zlim, zlim, length.out = 101)
+
+heatmap(as.matrix(protein_stand), Rowv = NA, Colv=NA, 
+        scale="none", 
+        col = my_colors,
+        breaks = breaks,
+        labRow=NA,
+        main="Protein-wise standardized log2(LFQ)",
+        cexCol = 0.7, 
+        xlab = NA, 
+        ylab = "Protein-wise z-scores of log2(LFQ)")
+
+
+```
+
+
+### Exercice : effet de la standardisation par ligne
+
+Comparez cette carte à celle des valeurs d’abondance non-standardisées par ligne. 
+Questions
+
+- Voyez-vous des  particularités additionnelles à signaler concernant les prélèvements (colonnes) ou protéines (lignes) ? 
+
+    - **VOTRE REPONSE**
+
+- Si oui, décrivez les faits saillants. 
+
+    - **VOTRE REPONSE**
+
+
+----------------------------------------------------------------
 
 ## Sauvegarde des résultats pour les étapes suivantes
 
@@ -680,18 +816,17 @@ message("Memory image saved in: ", RData_file)
 
 ```
 
-Les objets R sont maintenant sauvegardés dans le fichier
-`r RData_file`.
+Les objets R sont maintenant sauvegardés dans le fichier `r RData_file`.
 
-Ils pourront être restaurés au moyen de la fonction `load()`
-au début du prochain document R Markdown.
+Ils pourront être restaurés au moyen de la fonction `load()` au début du prochain document R Markdown.
 
+----------------------------------------------------------------
 
-## Annexe : statistiques descriptives
+## Annexe : formules de calcul des indicateurs
 
 **Note :** les formules ci-dessous sont celles définies pour calculer des paramètres d'échantillons. Ces paramètres visent uniquement à décrire les données disponible.  
 
-Des formules légèrement différentes sont utilisées pour estimer les paramètres d'une population à partir d'un échantillon, comme nous le verrons dans le chapitre **"Echantillonnage et estimation"**. 
+Des formules légèrement différentes sont utilisées pour estimer les paramètres d'une population à partir d'un échantillon, comme nous l'avons vu dans le chapitre de cours **"Echantillonnage et estimation"**. 
 
 | Statistique |  Description | Formule |
 |-----------------------|---------------------------|------------------------------------|
@@ -708,3 +843,5 @@ Des formules légèrement différentes sont utilisées pour estimer les paramèt
 | Médiane (médiane) | Tendance centrale (robuste aux valeurs aberrantes) | $\tilde{x} = Q_2 = Q(0.5)$ |
 | Troisième quartile |   | $Q_3 = Q(0.75)$ |
 | Ecart interquartile | Dispersion (robuste aux valeurs aberrantes) | $\text{IQR} = Q_3 - Q_1$ |
+
+----------------------------------------------------------------
