@@ -523,6 +523,7 @@ sample_groups$color <- group_colors[sample_groups$group]
 
 3. Observez la médiane et l'espace inter-quartile des échantillons. Identifiez-vous des échantillons atpiques ? Si oui, notez leurs identifiants, nous reviendrons dessus ultérieurement. 
 
+<!--
 
 ## Diagramme en violon (*violin plot*) des valeurs par prélèvement
 
@@ -555,7 +556,7 @@ legend("bottomright", legend = names(group_colors), fill = group_colors, cex = 0
 
 ```
 
-
+-->
 
 ## Carte de couleurs (heatmap) des données de départ
 
